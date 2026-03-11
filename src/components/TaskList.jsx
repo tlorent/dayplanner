@@ -14,15 +14,23 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, ac
   return (
     <div className="animate-fade-up" key={activeDay}>
       {/* Day heading */}
-      <div className="mb-7">
-        <h1 className="font-syne text-[28px] sm:text-[42px] font-extrabold tracking-[-0.03em] leading-none">
-          {FULL_DAYS[activeDay]}
-        </h1>
-        {isToday && (
-          <p className="font-mono text-[11px] text-terracotta mt-1.5 tracking-[0.08em]">
-            — VANDAAG
-          </p>
-        )}
+      <div className="flex items-start justify-between mb-7">
+        <div>
+          <h1 className="font-syne text-[28px] sm:text-[42px] font-extrabold tracking-[-0.03em] leading-none">
+            {FULL_DAYS[activeDay]}
+          </h1>
+          {isToday && (
+            <p className="font-mono text-[11px] text-terracotta mt-1.5 tracking-[0.08em]">
+              — VANDAAG
+            </p>
+          )}
+        </div>
+        <button
+          onClick={onReset}
+          className="font-mono text-[11px] tracking-[0.05em] px-4 py-2 border text-white bg-terracotta cursor-pointer transition-colors border-terracotta mt-1"
+        >
+          reset dag
+        </button>
       </div>
 
       {/* Day-specific tasks */}
@@ -67,14 +75,6 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, ac
         </p>
       )}
 
-      <div className="flex justify-end">
-        <button
-          onClick={onReset}
-          className="font-mono text-[10px] tracking-[0.05em] px-3 py-[5px] border border-border text-muted cursor-pointer transition-colors hover:border-terracotta hover:text-terracotta"
-        >
-          reset dag
-        </button>
-      </div>
     </div>
   );
 }

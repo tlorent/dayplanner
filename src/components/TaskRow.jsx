@@ -40,7 +40,7 @@ export function TaskRow({ task, checked, onToggle }) {
       {/* Label */}
       <span
         className={[
-          "flex-1 text-[13px] leading-relaxed",
+          "font-mono flex-1 text-[13px] leading-relaxed",
           checked ? "line-through text-muted" : "text-ink",
         ].join(" ")}
       >
