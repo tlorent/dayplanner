@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-syne: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --color-beige: #F5F0E8;
+  --color-beige-dark: #EAE3D6;
+  --color-beige-darker: #D4C9B8;
+  --color-terracotta: #C1440E;
+  --color-terracotta-light: #D4673A;
+  --color-ink: #1A1A1A;
+  --color-muted: #7A6E62;
+  --color-border: #D8D0C4;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.25s ease;
+}
+
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-beige); }
+::-webkit-scrollbar-thumb { background: var(--color-beige-darker); }
