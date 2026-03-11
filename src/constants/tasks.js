@@ -1,5 +1,5 @@
-export const DAYS = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
-export const FULL_DAYS = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag", "Zondag"];
+export const DAYS = ["Ma", "Di", "Wo", "Do", "Vr"];
+export const FULL_DAYS = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag"];
 
 export const TASKS = {
   daily: [
@@ -41,18 +41,10 @@ export const TASKS = {
     { id: "vr3", label: "5 nieuwe ICP's toevoegen aan pipeline",             tag: "bc" },
     { id: "vr4", label: "1 LinkedIn post schrijven: Hot take",               tag: "linkedin" },
   ],
-  5: [ // Zaterdag
-    { id: "za1", label: "Werken aan eigen ondernemingen (vrij blok)", tag: "bc" },
-  ],
-  6: [ // Zondag
-    { id: "zo1", label: "60 min LinkedIn planning: kies 3 onderwerpen ma/wo/vr", tag: "linkedin" },
-    { id: "zo2", label: "Schrijf 3 LinkedIn posts (10 min per post)",            tag: "linkedin" },
-    { id: "zo3", label: "Lees terug: klinkt dit als ik? Is de hook scherp?",    tag: "linkedin" },
-    { id: "zo4", label: "Schedule en klaar",                                      tag: "linkedin" },
-  ],
 };
 
 export function getTodayIndex() {
   const day = new Date().getDay();
-  return day === 0 ? 6 : day - 1; // Sunday=0 → index 6, Monday=1 → index 0
+  if (day === 0 || day === 6) return 0; // Weekend → default to Monday
+  return day - 1; // Monday=1 → 0, ..., Friday=5 → 4
 }

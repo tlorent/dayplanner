@@ -16,11 +16,12 @@ export default function Dashboard() {
     progress,
     activeTag,
     setActiveTag,
+    streak,
   } = useDashboard();
 
   return (
     <div className="min-h-screen bg-beige text-ink font-sans">
-      <Header doneCount={doneCount} total={visibleTasks.length} progress={progress} />
+      <Header doneCount={doneCount} total={visibleTasks.length} progress={progress} streak={streak} />
 
       <main className="max-w-275 mx-auto px-4 sm:px-8 lg:px-10 py-6 sm:py-10">
         <DaySelector

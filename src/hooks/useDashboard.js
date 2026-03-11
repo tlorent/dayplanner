@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { TASKS, getTodayIndex } from "../constants/tasks";
+import { useStreak } from "./useStreak";
 
 function persist(key, value) {
   localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
@@ -30,6 +31,8 @@ export function useDashboard() {
     persist("dashboard-checked", next);
   }
 
+  const streak = useStreak(checked);
+
   const dayTasks = TASKS[activeDay] ?? [];
   const allTasks = [...TASKS.daily, ...dayTasks];
   const visibleTasks = activeTag ? allTasks.filter((t) => t.tag === activeTag) : allTasks;
@@ -52,5 +55,6 @@ export function useDashboard() {
     progress,
     activeTag,
     setActiveTag,
+    streak,
   };
 }

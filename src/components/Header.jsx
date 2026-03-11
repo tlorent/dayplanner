@@ -1,4 +1,6 @@
-export function Header({ doneCount, total, progress }) {
+import { Streak } from "./Streak";
+
+export function Header({ doneCount, total, progress, streak }) {
   const complete = progress === 100;
 
   return (
@@ -13,24 +15,28 @@ export function Header({ doneCount, total, progress }) {
         </span>
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <span className="font-mono text-[11px] text-muted">
-          {doneCount}/{total}
-        </span>
-        <div className="w-16 sm:w-20 h-0.75 bg-beige-darker">
-          <div
-            className="h-full bg-terracotta transition-[width] duration-400 ease-in-out"
-            style={{ width: `${progress}%` }}
-          />
+      <div className="flex items-center gap-4 shrink-0">
+        <Streak streak={streak} />
+        <div className="w-px h-4 bg-border" />
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[11px] text-muted">
+            {doneCount}/{total}
+          </span>
+          <div className="w-16 sm:w-20 h-0.75 bg-beige-darker">
+            <div
+              className="h-full bg-terracotta transition-[width] duration-400 ease-in-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span
+            className={[
+              "font-mono text-[11px]",
+              complete ? "text-terracotta font-medium" : "text-muted",
+            ].join(" ")}
+          >
+            {progress}%
+          </span>
         </div>
-        <span
-          className={[
-            "font-mono text-[11px]",
-            complete ? "text-terracotta font-medium" : "text-muted",
-          ].join(" ")}
-        >
-          {progress}%
-        </span>
       </div>
     </header>
   );
