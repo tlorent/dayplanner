@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useDashboard } from "./src/hooks/useDashboard";
 import { Header } from "./src/components/Header";
 import { DaySelector } from "./src/components/DaySelector";
 import { TagFilter } from "./src/components/TagFilter";
 import { TaskList } from "./src/components/TaskList";
+import { AddTaskForm } from "./src/components/AddTaskForm";
+
 export default function Dashboard() {
   const {
     todayIndex,
@@ -18,6 +21,8 @@ export default function Dashboard() {
     setActiveTag,
     streak,
   } = useDashboard();
+
+  const [showForm, setShowForm] = useState(false);
 
   return (
     <div className="min-h-screen bg-beige text-ink font-sans">
@@ -38,9 +43,17 @@ export default function Dashboard() {
           checked={checked}
           onToggle={toggleTask}
           onReset={resetDay}
+          onAddTask={() => setShowForm(true)}
           activeTag={activeTag}
         />
       </main>
+
+      {showForm && (
+        <AddTaskForm
+          activeDay={activeDay}
+          onClose={() => setShowForm(false)}
+        />
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { TASKS, FULL_DAYS } from "../constants/tasks";
 import { SectionLabel } from "./SectionLabel";
 import { TaskRow } from "./TaskRow";
 
-export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, activeTag }) {
+export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, onAddTask, activeTag }) {
   const [dailyOpen, setDailyOpen] = useState(false);
   const dayTasks = TASKS[activeDay] ?? [];
   const isToday = activeDay === todayIndex;
@@ -29,12 +29,20 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, ac
             </p>
           )}
         </div>
-        <button
-          onClick={onReset}
-          className="font-mono text-[11px] tracking-[0.05em] px-4 py-2 border text-white bg-terracotta cursor-pointer transition-colors border-terracotta mt-1"
-        >
-          reset dag
-        </button>
+        <div className="flex gap-2 mt-1">
+          <button
+            onClick={onAddTask}
+            className="font-mono text-[11px] tracking-[0.05em] px-4 py-2 border border-border text-muted cursor-pointer hover:border-ink hover:text-ink transition-colors"
+          >
+            + taak
+          </button>
+          <button
+            onClick={onReset}
+            className="font-mono text-[11px] tracking-[0.05em] px-4 py-2 border text-white bg-terracotta cursor-pointer transition-colors border-terracotta"
+          >
+            reset dag
+          </button>
+        </div>
       </div>
 
       {/* Day-specific tasks */}
