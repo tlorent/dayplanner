@@ -1,16 +1,50 @@
 import { useState } from "react";
-import { TASKS, FULL_DAYS } from "../constants/tasks";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { FULL_DAYS } from "../constants/tasks";
 import { SectionLabel } from "./SectionLabel";
 import { TaskRow } from "./TaskRow";
 
-export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, onAddTask, activeTag }) {
+function SortableList({ tasks, checked, onToggle, onReorder, section }) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  function handleDragEnd({ active, over }) {
+    if (over && active.id !== over.id) {
+      onReorder(section, active.id, over.id);
+    }
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+        <div className="bg-beige-dark border border-border px-4">
+          {tasks.map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              checked={checked[task.id]}
+              onToggle={() => onToggle(task.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+export function TaskList({ activeDay, todayIndex, dailyTasks, dayTasks, checked, onToggle, onReset, onAddTask, onReorder, activeTag }) {
   const [dailyOpen, setDailyOpen] = useState(false);
-  const dayTasks = TASKS[activeDay] ?? [];
   const isToday = activeDay === todayIndex;
 
   const filter = (tasks) => activeTag ? tasks.filter((t) => (t.tags ?? [t.tag]).includes(activeTag)) : tasks;
   const visibleDayTasks = filter(dayTasks);
-  const visibleDailyTasks = filter(TASKS.daily);
+  const visibleDailyTasks = filter(dailyTasks);
   const nothingVisible = visibleDayTasks.length === 0 && visibleDailyTasks.length === 0;
 
   const dailyDone = visibleDailyTasks.filter((t) => checked[t.id]).length;
@@ -49,16 +83,13 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, on
       {visibleDayTasks.length > 0 && (
         <div className="mb-8">
           <SectionLabel>{FULL_DAYS[activeDay]}-specifiek</SectionLabel>
-          <div className="bg-beige-dark border border-border px-4">
-            {visibleDayTasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                checked={checked[task.id]}
-                onToggle={() => onToggle(task.id)}
-              />
-            ))}
-          </div>
+          <SortableList
+            tasks={visibleDayTasks}
+            checked={checked}
+            onToggle={onToggle}
+            onReorder={onReorder}
+            section={activeDay}
+          />
         </div>
       )}
 
@@ -87,16 +118,13 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, on
           </button>
 
           {dailyOpen && (
-            <div className="bg-beige-dark border border-border px-4">
-              {visibleDailyTasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  checked={checked[task.id]}
-                  onToggle={() => onToggle(task.id)}
-                />
-              ))}
-            </div>
+            <SortableList
+              tasks={visibleDailyTasks}
+              checked={checked}
+              onToggle={onToggle}
+              onReorder={onReorder}
+              section="daily"
+            />
           )}
         </div>
       )}
@@ -108,7 +136,6 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, on
           {FULL_DAYS[activeDay].toLowerCase()}.
         </p>
       )}
-
     </div>
   );
 }

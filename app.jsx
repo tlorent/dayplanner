@@ -14,6 +14,9 @@ export default function Dashboard() {
     checked,
     toggleTask,
     resetDay,
+    reorderSection,
+    dailyTasks,
+    dayTasks,
     visibleTasks,
     doneCount,
     progress,
@@ -40,10 +43,13 @@ export default function Dashboard() {
         <TaskList
           activeDay={activeDay}
           todayIndex={todayIndex}
+          dailyTasks={dailyTasks}
+          dayTasks={dayTasks}
           checked={checked}
           onToggle={toggleTask}
           onReset={resetDay}
           onAddTask={() => setShowForm(true)}
+          onReorder={reorderSection}
           activeTag={activeTag}
         />
       </main>

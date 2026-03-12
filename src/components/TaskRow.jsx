@@ -1,17 +1,28 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { TAG_COLORS } from "../constants/tags";
 
 export function TaskRow({ task, checked, onToggle }) {
   const tags = task.tags ?? (task.tag ? [task.tag] : []);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       role="checkbox"
       aria-checked={checked}
       tabIndex={0}
       onClick={onToggle}
       onKeyDown={(e) => e.key === " " && onToggle()}
       className={[
-        "flex items-start gap-3 py-3 border-b border-border cursor-pointer",
+        "group flex items-start gap-3 py-3 border-b border-border cursor-pointer",
         "transition-colors last:border-b-0",
         "hover:bg-beige-dark hover:-mx-4 hover:px-4",
         checked ? "opacity-50" : "",
@@ -61,6 +72,18 @@ export function TaskRow({ task, checked, onToggle }) {
             </span>
           );
         })}
+      </div>
+
+      {/* Drag handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="flex flex-col gap-[3px] shrink-0 mt-1 px-1 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-70 transition-opacity"
+      >
+        <span className="block w-3 h-px bg-ink" />
+        <span className="block w-3 h-px bg-ink" />
+        <span className="block w-3 h-px bg-ink" />
       </div>
     </div>
   );
