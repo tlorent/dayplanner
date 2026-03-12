@@ -5,6 +5,8 @@ export const TAG_COLORS = {
   sudo:      { bg: "#1A1A1A", text: "#00FF41" },
   bc:        { bg: "#C1440E", text: "#ffffff" },
   pingpilot: { bg: "#4A4A4A", text: "#F5F0E8" },
+  hyf:       { bg: "#4A6741", text: "#E8F5E4" },
+  instagram: { bg: "#C13584", text: "#E8F5E4" },
 };
 
 export const ACCOUNTS = [

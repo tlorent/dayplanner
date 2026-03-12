@@ -3,45 +3,46 @@ export const FULL_DAYS = ["Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijda
 
 export const TASKS = {
   daily: [
-    { id: "d1",  label: "Frontend Masters video (~30 min)",               tag: "leren" },
-    { id: "d2",  label: "HYF les-segment schrijven (~30–60 min)",         tag: "leren" },
-    { id: "d3",  label: "3–5 LinkedIn posts liken/reageren",              tag: "linkedin" },
-    { id: "d4",  label: "Reageer op reacties op eigen content",           tag: "linkedin" },
-    { id: "d5",  label: "Leeskring: 5 comments op boekaccounts",         tag: "leeskring" },
-    { id: "d6",  label: "Leeskring: 1 post publiceren of voorbereiden",  tag: "leeskring" },
-    { id: "d7",  label: "Sudo: 5 comments op relevante posts",           tag: "sudo" },
-    { id: "d8",  label: "Sudo: 1 post publiceren of voorbereiden",       tag: "sudo" },
-    { id: "d9",  label: "Beyond Commit: pipeline actie uitvoeren",       tag: "bc" },
-    { id: "d10", label: "PingPilot: minimaal 1 uur bouwen",              tag: "pingpilot" },
-    { id: "d11", label: "Noteer wat je bouwde (input voor vrijdagpost)", tag: "pingpilot" },
-  ],
-  0: [ // Maandag
-    { id: "ma1", label: "5 nieuwe ICP's toevoegen aan pipeline (dag 1: volgen)", tag: "bc" },
-    { id: "ma2", label: "1 LinkedIn post schrijven: Beyond Commit content",       tag: "linkedin" },
-    { id: "ma3", label: "3 connectieverzoeken sturen naar leads op dag 7",        tag: "bc" },
-    { id: "ma4", label: "Sudo: samenwerkingsverzoek sturen",                      tag: "sudo" },
-  ],
-  1: [ // Dinsdag
-    { id: "di1", label: "PingPilot deep work: 3–4 uur bouwen", tag: "pingpilot" },
-    { id: "di2", label: "Kort noteren wat je bouwde",           tag: "pingpilot" },
-  ],
-  2: [ // Woensdag
-    { id: "wo1", label: "Leeskring: 3–5 uitgeverijen/podcasts mailen, óf",          tag: "leeskring" },
-    { id: "wo2", label: "Leeskring: 2 Instagram posts plannen + publiceren, óf",    tag: "leeskring" },
-    { id: "wo3", label: "Leeskring: reageren op 5 posts van grotere boekaccounts",  tag: "leeskring" },
-    { id: "wo4", label: "1 LinkedIn post schrijven: Story (eigen ervaring)",         tag: "linkedin" },
-  ],
-  3: [ // Donderdag
-    { id: "do1", label: "5 outreach mails naar geconnecte leads", tag: "bc" },
-    { id: "do2", label: "PingPilot bouwen (extra blok)",           tag: "pingpilot" },
-  ],
-  4: [ // Vrijdag
-    { id: "vr1", label: "1 LinkedIn building-in-public post over PingPilot", tag: "linkedin" },
-    { id: "vr2", label: "Elke 2–3 weken: standalone post over FHWTTL",      tag: "linkedin" },
-    { id: "vr3", label: "5 nieuwe ICP's toevoegen aan pipeline",             tag: "bc" },
-    { id: "vr4", label: "1 LinkedIn post schrijven: Hot take",               tag: "linkedin" },
-  ],
-};
+    { id: "d1",  label: "HYF les-segment schrijven",            tags: ["hyf"] },
+    { id: "d2",  label: "Frontend Masters video",               tags: ["leren"] },
+    { id: "d3",  label: "5 LinkedIn posts liken/reageren",    tags: ["linkedin", "bc"] },
+    { id: "d4",  label: "Reageer op reacties op eigen content", tags: ["linkedin", "bc"] },
+    { id: "d5",  label: "Pipeline actie uitvoeren",             tags: ["bc"] },
+    { id: "d6",  label: "5 comments op boekaccounts",           tags: ["leeskring", "instagram"] },
+    { id: "d7",  label: "1 post publiceren of voorbereiden",    tags: ["leeskring", "instagram"] },
+    { id: "d8", label: "Leeskring: 3–5 uitgeverijen/podcasts/boekhandels mailen", tags: ["leeskring"] },
+    { id: "d9",  label: "5 LinkedIn posts liken/reageren",    tags: ["linkedin", "sudo"] },
+    { id: "d10",  label: "Reageer op reacties op eigen content", tags: ["linkedin", "sudo"] },
+    { id: "d12",  label: "5 comments op relevante posts",        tags: ["sudo", "instagram"] },
+    { id: "d13",  label: "1 post publiceren of voorbereiden",    tags: ["sudo", "instagram"] },
+    { id: "d13", label: "PingPilot minimaal 1 uur bouwen",      tags: ["pingpilot"] },
+    { id: "d14", label: "Noteer wat je bouwde (input voor vrijdagpost)", tags: ["pingpilot"] },
+  ],0: [ // Maandag — Content dag
+  { id: "ma1", label: "BC: LinkedIn post schrijven",           tags: ["bc", "linkedin"] },
+  { id: "ma2", label: "Sudo: LinkedIn post schrijven",         tags: ["sudo", "linkedin"] },
+  { id: "ma3", label: "5 nieuwe ICP's toevoegen aan pipeline", tags: ["bc"] },
+],
+
+1: [ // Dinsdag — Bouwen
+  { id: "di1", label: "PingPilot deep work: 2 uur",         tags: ["pingpilot"] },
+],
+
+2: [ // Woensdag — Outreach + content
+  { id: "wo1", label: "BC: LinkedIn post schrijven",           tags: ["bc", "linkedin"] },
+  { id: "wo2", label: "Sudo: LinkedIn post schrijven",         tags: ["sudo", "linkedin"] },
+],
+
+3: [ // Donderdag — Bouwen + BC
+  { id: "do1", label: "PingPilot deep work: 2 uur",         tags: ["pingpilot"] },
+  { id: "do2", label: "BC: 5 outreach mails naar leads",      tags: ["bc"] },
+],
+
+4: [ // Vrijdag — Content + review
+  { id: "vr1", label: "BC: LinkedIn post schrijven",           tags: ["bc", "linkedin"] },
+  { id: "vr2", label: "Sudo: LinkedIn post schrijven",         tags: ["sudo", "linkedin"] },
+  { id: "vr3", label: "PingPilot building-in-public post",    tags: ["pingpilot", "linkedin"] },
+  { id: "vr4", label: "Weekreview: wat werkte, wat schuift",  tags: ["bc", "pingpilot"] },
+]}
 
 export function getTodayIndex() {
   const day = new Date().getDay();

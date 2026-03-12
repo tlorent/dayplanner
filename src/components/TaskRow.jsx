@@ -1,7 +1,7 @@
 import { TAG_COLORS } from "../constants/tags";
 
 export function TaskRow({ task, checked, onToggle }) {
-  const tag = TAG_COLORS[task.tag] ?? { bg: "#E8E0D4", text: "#1A1A1A" };
+  const tags = task.tags ?? (task.tag ? [task.tag] : []);
 
   return (
     <div
@@ -47,13 +47,21 @@ export function TaskRow({ task, checked, onToggle }) {
         {task.label}
       </span>
 
-      {/* Tag */}
-      <span
-        className="font-mono text-[10px] px-[7px] py-[2px] tracking-[0.05em] shrink-0"
-        style={{ background: tag.bg, color: tag.text }}
-      >
-        {task.tag}
-      </span>
+      {/* Tags */}
+      <div className="flex gap-1 shrink-0">
+        {tags.map((tag) => {
+          const color = TAG_COLORS[tag] ?? { bg: "#E8E0D4", text: "#1A1A1A" };
+          return (
+            <span
+              key={tag}
+              className="font-mono text-[10px] px-[7px] py-[2px] tracking-[0.05em]"
+              style={{ background: color.bg, color: color.text }}
+            >
+              {tag}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -1,15 +1,19 @@
+import { useState } from "react";
 import { TASKS, FULL_DAYS } from "../constants/tasks";
 import { SectionLabel } from "./SectionLabel";
 import { TaskRow } from "./TaskRow";
 
 export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, activeTag }) {
+  const [dailyOpen, setDailyOpen] = useState(false);
   const dayTasks = TASKS[activeDay] ?? [];
   const isToday = activeDay === todayIndex;
 
-  const filter = (tasks) => activeTag ? tasks.filter((t) => t.tag === activeTag) : tasks;
+  const filter = (tasks) => activeTag ? tasks.filter((t) => (t.tags ?? [t.tag]).includes(activeTag)) : tasks;
   const visibleDayTasks = filter(dayTasks);
   const visibleDailyTasks = filter(TASKS.daily);
   const nothingVisible = visibleDayTasks.length === 0 && visibleDailyTasks.length === 0;
+
+  const dailyDone = visibleDailyTasks.filter((t) => checked[t.id]).length;
 
   return (
     <div className="animate-fade-up" key={activeDay}>
@@ -50,20 +54,42 @@ export function TaskList({ activeDay, todayIndex, checked, onToggle, onReset, ac
         </div>
       )}
 
-      {/* Daily tasks */}
+      {/* Daily tasks — accordion */}
       {visibleDailyTasks.length > 0 && (
         <div className="mb-6">
-          <SectionLabel>dagelijks</SectionLabel>
-          <div className="bg-beige-dark border border-border px-4">
-            {visibleDailyTasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                checked={checked[task.id]}
-                onToggle={() => onToggle(task.id)}
-              />
-            ))}
-          </div>
+          <button
+            onClick={() => setDailyOpen((o) => !o)}
+            className="flex items-center justify-between w-full mb-3 cursor-pointer group"
+          >
+            <p className="font-mono text-[10px] text-muted tracking-[0.12em] uppercase group-hover:text-ink transition-colors">
+              dagelijks
+              <span className="ml-2 text-muted">
+                {dailyDone}/{visibleDailyTasks.length}
+              </span>
+            </p>
+            <svg
+              width="10"
+              height="6"
+              viewBox="0 0 10 6"
+              fill="none"
+              className={`transition-transform ${dailyOpen ? "rotate-180" : ""}`}
+            >
+              <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted" />
+            </svg>
+          </button>
+
+          {dailyOpen && (
+            <div className="bg-beige-dark border border-border px-4">
+              {visibleDailyTasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  checked={checked[task.id]}
+                  onToggle={() => onToggle(task.id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
