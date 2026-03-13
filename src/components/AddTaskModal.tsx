@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import type { Tag, DayIndex, Task } from '../types'
 import { useWeekStore, getWeekKey } from '../store/useWeekStore'
 import { TAGS, DAYS } from '../data/tasks'
-import { getSession } from '../auth'
+import { useUser } from '@stackframe/react'
 import { TagChip } from './TagChip'
 
 const schema = z.object({
@@ -81,9 +81,10 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     onClose()
   }
 
-  const session = getSession()
+  const user = useUser()
+  const isTim = user?.primaryEmail === import.meta.env.VITE_ADMIN_EMAIL
   const allTags = [
-    ...(session !== 'lilith' ? TAGS.map((name) => ({ name, color: undefined as string | undefined })) : []),
+    ...(isTim ? TAGS.map((name) => ({ name, color: undefined as string | undefined })) : []),
     ...customTags.map((t) => ({ name: t.name, color: t.color })),
   ]
 
