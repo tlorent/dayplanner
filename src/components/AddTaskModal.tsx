@@ -210,7 +210,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
           {/* Frequency */}
           <div>
             <label className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
-              Frequentie
+              Frequency
             </label>
             <Controller
               name="type"

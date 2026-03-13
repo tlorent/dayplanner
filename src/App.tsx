@@ -222,7 +222,7 @@ export default function App() {
           </div>
 
           {/* Mobile: day selector */}
-          <div className="flex md:hidden gap-1 mb-6 overflow-x-auto py-1">
+          <div className="flex md:hidden gap-1 mb-3 overflow-x-auto py-1">
             {DAYS.map((day, i) => {
               const isActive = activeDay === i
               const isToday = todayIndex === i
@@ -241,6 +241,46 @@ export default function App() {
               )
             })}
           </div>
+
+          {/* Mobile: tag filter */}
+          {[
+            ...(isTim ? [...TAGS].sort().map((name) => ({ name, color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)' })) : []),
+            ...customTags.map((t) => ({ name: t.name, color: t.color })),
+          ].length > 0 && (
+            <div className="flex md:hidden gap-1.5 mb-6 overflow-x-auto py-1">
+              <button
+                onClick={() => setActiveTag(null)}
+                className={[
+                  'shrink-0 px-2.5 py-1 rounded-md border-none font-ui text-[11px] cursor-pointer transition-all duration-150',
+                  activeTag === null ? 'bg-white/10 text-white/90' : 'bg-transparent text-white/40 hover:bg-hover',
+                ].join(' ')}
+                style={activeTag === null ? { outline: '1.5px solid rgba(255,255,255,0.2)' } : {}}
+              >
+                All
+              </button>
+              {[
+                ...(isTim ? [...TAGS].sort().map((name) => ({ name, color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)' })) : []),
+                ...customTags.map((t) => ({ name: t.name, color: t.color })),
+              ].map(({ name, color }) => {
+                const isActive = activeTag === name
+                return (
+                  <button
+                    key={name}
+                    onClick={() => setActiveTag(isActive ? null : name as Tag)}
+                    className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-md border-none font-ui text-[11px] cursor-pointer transition-all duration-150"
+                    style={{
+                      color: isActive ? color : 'rgba(255,255,255,0.4)',
+                      background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent',
+                      outline: isActive ? `1.5px solid ${color}40` : 'none',
+                    }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+                    {name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
           {/* Dag-specifiek section */}
           <section className="fade-up delay-2 mb-8">
