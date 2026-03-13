@@ -7,8 +7,10 @@ import { AddTaskModal } from './components/AddTaskModal'
 import { RestoreTasksModal } from './components/RestoreTasksModal'
 import { Logo } from './components/Logo'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { logout, getSession } from './auth'
+import { UserButton, useUser } from '@stackframe/react'
+import { initUserStore } from './store/useWeekStore'
+
+const TIM_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 
 function getTodayIndex(): DayIndex | null {
   const d = new Date().getDay()
@@ -29,13 +31,14 @@ function getWeekDates(): string[] {
 }
 
 export default function App() {
-  const navigate = useNavigate()
-  const session = getSession()
+  const user = useUser()
+  const isTim = user?.primaryEmail === TIM_EMAIL
 
-  function handleLogout() {
-    logout()
-    navigate('/')
-  }
+  useEffect(() => {
+    if (user?.id) {
+      initUserStore(user.id, isTim)
+    }
+  }, [user?.id])
 
   const activeDay = useWeekStore((s) => s.activeDay)
   const activeTag = useWeekStore((s) => s.activeTag)
@@ -50,7 +53,7 @@ export default function App() {
   const setDailySectionOpen = useWeekStore((s) => s.setDailySectionOpen)
   const customTags = useWeekStore((s) => s.customTags)
 
-  useEffect(() => { purgeExpiredDisabled() }, [])
+  useEffect(() => { purgeExpiredDisabled() }, [])  // eslint-disable-line
 
   const progress = selectProgress(checked, customTasks, activeTag, activeDay, disabledBuiltins)
 
@@ -62,7 +65,7 @@ export default function App() {
   const progressPct = progress.total > 0 ? (progress.done / progress.total) * 100 : 0
 
   const handleResetDay = () => {
-    if (window.confirm('Reset alle taken voor vandaag?')) {
+    if (window.confirm('Reset all tasks for today?')) {
       resetDay()
     }
   }
@@ -95,20 +98,8 @@ export default function App() {
           </div>
 
           {/* User + logout */}
-          <div className="ml-auto flex items-center gap-2.5">
-            <img
-              src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(session ?? '')}`}
-              alt={session ?? ''}
-              className="w-7 h-7 rounded-full bg-card shrink-0"
-            />
-            <span className="font-display text-[15px] text-white/90 capitalize">{session}</span>
-            <span className="w-px h-3.5 bg-white/10 shrink-0" />
-            <button
-              onClick={handleLogout}
-              className="px-2.5 py-1.5 rounded-md border-none bg-transparent font-ui text-[12px] text-white/40 cursor-pointer hover:bg-hover hover:text-white/70 transition-colors duration-150"
-            >
-              Sign out
-            </button>
+          <div className="ml-auto flex items-center">
+            <UserButton />
           </div>
         </div>
       </header>
@@ -168,7 +159,7 @@ export default function App() {
                 All tags
               </button>
               {[
-                ...(session !== 'lilith' ? [...TAGS].sort().map((name) => ({ name, color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)' })) : []),
+                ...(isTim ? [...TAGS].sort().map((name) => ({ name, color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)' })) : []),
                 ...customTags.map((t) => ({ name: t.name, color: t.color })),
               ].map(({ name, color }) => {
                 const isActive = activeTag === name

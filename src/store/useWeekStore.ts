@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Tag, DayIndex, Task, CheckedState, CustomTag } from '../types'
 import { DAILY_TASKS, DAY_TASKS } from '../data/tasks'
-import { getSession } from '../auth'
 
 export function getWeekKey(): string {
   const now = new Date()
@@ -24,8 +23,23 @@ export interface DisabledBuiltin {
   disabledAt: number // timestamp ms
 }
 
-function isBuiltinUser(): boolean {
-  return getSession() !== 'lilith'
+// Module-level state set by App on mount, before store selectors are called
+let _showBuiltins = false
+let _storageKey = 'weekplanning-state'
+
+export function initUserStore(userId: string, showBuiltins: boolean) {
+  _showBuiltins = showBuiltins
+  const newKey = `weekplanning-state-${userId}`
+  if (_storageKey !== newKey) {
+    _storageKey = newKey
+    // Migrate legacy data (from before per-user keys) into the user's key on first run
+    const legacy = localStorage.getItem('weekplanning-state')
+    if (legacy && !localStorage.getItem(newKey)) {
+      localStorage.setItem(newKey, legacy)
+    }
+    useWeekStore.persist.setOptions({ name: newKey })
+    useWeekStore.persist.rehydrate()
+  }
 }
 
 // Pure helper functions — safe to call outside of Zustand selectors
@@ -38,7 +52,7 @@ export function selectDayTasks(
 ): Task[] {
   const weekKey = getWeekKey()
   const disabledIds = new Set((disabledBuiltins ?? []).map((d) => d.id))
-  const builtins = isBuiltinUser() ? DAY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
+  const builtins = _showBuiltins ? DAY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
   const custom = customTasks.filter((t) => {
     if (t.dayIndex === undefined) return false
     if (t.oneOff && t.createdWeekKey !== weekKey) return false
@@ -54,7 +68,7 @@ export function selectDayTasks(
 
 export function selectDailyTasks(customTasks: Task[], activeTag: Tag | null, disabledBuiltins?: DisabledBuiltin[]): Task[] {
   const disabledIds = new Set((disabledBuiltins ?? []).map((d) => d.id))
-  const builtins = isBuiltinUser() ? DAILY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
+  const builtins = _showBuiltins ? DAILY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
   const custom = customTasks.filter((t) => t.dayIndex === undefined)
   const all = [...builtins, ...custom]
   if (activeTag) return all.filter((t) => t.tags.includes(activeTag))

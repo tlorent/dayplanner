@@ -3,22 +3,34 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useStackApp } from '@stackframe/react'
 import { Logo } from '../components/Logo'
 
-export default function Login() {
+export default function Signup() {
   const app = useStackApp()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (password !== confirm) {
+      setError('Passwords do not match.')
+      return
+    }
     setLoading(true)
     setError('')
-    const result = await app.signInWithCredential({ email, password })
+    const result = await app.signUpWithCredential({ email, password, noVerificationCallback: true })
     setLoading(false)
     if (result.status === 'error') {
-      setError('Wrong email or password.')
+      const msg = result.error.message ?? ''
+      if (msg.toLowerCase().includes('already exists')) {
+        setError('An account with this email already exists.')
+      } else if (msg.toLowerCase().includes('password')) {
+        setError('Password does not meet requirements.')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } else {
       navigate('/app')
     }
@@ -34,7 +46,7 @@ export default function Login() {
               Dunzo
             </h1>
           </Link>
-          <p className="text-[14px] text-white/50 mt-2">Sign in to your account</p>
+          <p className="text-[14px] text-white/50 mt-2">Create your account</p>
         </div>
 
         <form
@@ -64,9 +76,25 @@ export default function Login() {
             </label>
             <input
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={e => { setPassword(e.target.value); setError('') }}
+              className="bg-card rounded-lg px-3.5 py-2.5 text-[14px] text-white/90 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-white/15"
+              style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-semibold tracking-wide text-white/50 uppercase">
+              Confirm password
+            </label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={e => { setConfirm(e.target.value); setError('') }}
               className="bg-card rounded-lg px-3.5 py-2.5 text-[14px] text-white/90 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-white/15"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}
               placeholder="••••••••"
@@ -83,13 +111,13 @@ export default function Login() {
             disabled={loading}
             className="mt-1 w-full py-2.5 rounded-lg font-ui font-semibold text-[14px] text-white/90 bg-white/10 hover:bg-white/15 transition-colors duration-150 cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
 
           <p className="text-center text-[13px] text-white/40 m-0">
-            No account?{' '}
-            <Link to="/signup" className="text-white/70 hover:text-white/90 transition-colors duration-150 no-underline">
-              Sign up
+            Already have an account?{' '}
+            <Link to="/login" className="text-white/70 hover:text-white/90 transition-colors duration-150 no-underline">
+              Sign in
             </Link>
           </p>
         </form>
