@@ -73,7 +73,7 @@ export default function App() {
       <header className="sticky top-0 z-100 bg-elevated border-b border-border backdrop-blur-md">
         <div className="px-6 h-13 flex items-center gap-4">
           <Logo size={22} />
-          <span className="font-display font-extrabold text-[22px] leading-none text-white/90 shrink-0" style={{ letterSpacing: '-0.5px' }}>
+          <span className="hidden sm:inline font-display font-extrabold text-[22px] leading-none text-white/90 shrink-0" style={{ letterSpacing: '-0.5px' }}>
             Dunzo
           </span>
           <span className="w-px h-3.5 bg-white/10 shrink-0" />
@@ -165,7 +165,7 @@ export default function App() {
                     : 'bg-transparent text-white/50 hover:bg-hover',
                 ].join(' ')}
               >
-                Alles
+                All tags
               </button>
               {[
                 ...(session !== 'lilith' ? [...TAGS].sort().map((name) => ({ name, color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)' })) : []),
@@ -194,7 +194,7 @@ export default function App() {
               className="w-full text-left px-2.5 py-1.5 rounded-md border-none bg-transparent font-ui text-[11px] cursor-pointer transition-all duration-150 hover:bg-hover mb-2"
               style={{ color: 'rgba(255,255,255,0.35)' }}
             >
-              ↩ {disabledBuiltins.length} verborgen {disabledBuiltins.length !== 1 ? 'taken' : 'taak'}
+              ↩ {disabledBuiltins.length} deleted {disabledBuiltins.length !== 1 ? 'tasks' : 'task'}
             </button>
           )}
 
@@ -208,7 +208,7 @@ export default function App() {
               color: '#C8922A',
             }}
           >
-            + taak toevoegen
+            + add task
           </button>
         </aside>
 
@@ -216,22 +216,22 @@ export default function App() {
         <main className="main-content flex-1 min-w-0 px-4 md:px-10 py-8">
 
           {/* Day title */}
-          <div className="fade-up delay-1 mb-8">
-            <div className="flex items-baseline gap-4">
-              <h1 className="font-display font-extrabold text-[42px] md:text-[72px] leading-none text-white/92 m-0" style={{ letterSpacing: '-1.5px' }}>
+          <div className="fade-up delay-1 mb-6">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <h1 className="font-display font-extrabold text-[36px] md:text-[72px] leading-none text-white/92 m-0" style={{ letterSpacing: '-1.5px' }}>
                 {DAYS[activeDay].label}
               </h1>
-              <span className="font-ui text-[18px] font-medium text-white/70 tabular-nums">{weekDates[activeDay]}</span>
+              <span className="font-ui text-[15px] md:text-[18px] font-medium text-white/70 tabular-nums">{weekDates[activeDay]}</span>
+              {todayIndex === activeDay && (
+                <span className="font-ui text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: '#C8922A' }}>
+                  — Today
+                </span>
+              )}
             </div>
-            {todayIndex === activeDay && (
-              <p className="m-0 mt-1.5 font-ui text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: '#C8922A' }}>
-                — Vandaag
-              </p>
-            )}
           </div>
 
           {/* Mobile: day selector */}
-          <div className="flex md:hidden gap-1 mb-6 overflow-x-auto pb-1">
+          <div className="flex md:hidden gap-1 mb-6 overflow-x-auto py-1">
             {DAYS.map((day, i) => {
               const isActive = activeDay === i
               const isToday = todayIndex === i
@@ -255,7 +255,7 @@ export default function App() {
           <section className="fade-up delay-2 mb-8">
             <div className="mb-3">
               <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted">
-                Dag-specifiek
+                Day-specific
               </h2>
             </div>
             <DaySection />
@@ -269,7 +269,7 @@ export default function App() {
                 className="flex items-center gap-2 border-none bg-transparent cursor-pointer p-0"
               >
                 <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted flex items-center gap-2">
-                  Dagelijks
+                  Daily
                   <span className="text-[10px] text-white/50">{dailySectionOpen ? '▾' : '▸'}</span>
                 </h2>
               </button>
@@ -277,7 +277,7 @@ export default function App() {
                 onClick={handleResetDay}
                 className={`px-2.5 py-1 rounded-[5px] border border-border bg-transparent text-muted font-ui text-[11px] cursor-pointer transition-all duration-150 hover:bg-hover hover:text-text ${dailySectionOpen ? '' : 'invisible'}`}
               >
-                Reset dag
+                Reset day
               </span>
             </div>
             {dailySectionOpen && <DailySection />}
@@ -294,7 +294,7 @@ export default function App() {
                 color: '#C8922A',
               }}
             >
-              + taak toevoegen
+              + add task
             </button>
           </div>
         </main>

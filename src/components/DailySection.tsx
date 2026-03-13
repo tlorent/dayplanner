@@ -26,7 +26,7 @@ export function DailySection() {
   const tagKeys = (Object.keys(groups) as Tag[]).sort()
 
   if (tasks.length === 0) {
-    return <p className="text-muted text-[13px] py-3">Geen dagelijkse taken voor deze tag.</p>
+    return <p className="text-muted text-[13px] py-3">No daily tasks for this tag.</p>
   }
 
   return (

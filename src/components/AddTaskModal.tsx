@@ -9,8 +9,8 @@ import { getSession } from '../auth'
 import { TagChip } from './TagChip'
 
 const schema = z.object({
-  label: z.string().min(1, 'Voer een taaklabel in.'),
-  tags: z.array(z.string()).min(1, 'Selecteer minstens één tag.'),
+  label: z.string().min(1, 'Add a task description.'),
+  tags: z.array(z.string()).min(1, 'Select at least one task.'),
   type: z.enum(['daily', 'recurring', 'oneoff']),
   dayIndex: z.number().min(0).max(4),
 })
@@ -94,7 +94,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     >
       <div className="bg-elevated border border-border rounded-xl p-6 w-95 max-w-[90vw]">
         <h3 className="m-0 mb-5 text-[15px] font-semibold text-text">
-          {isEditing ? 'Taak bewerken' : 'Taak toevoegen'}
+          {isEditing ? 'Modify task' : 'Add task'}
         </h3>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -107,7 +107,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
             <input
               {...register('label')}
               autoFocus
-              placeholder="Wat moet er gebeuren?"
+              placeholder="What needs to be done?"
               className="w-full bg-card border border-border rounded-md px-3 py-2 text-text text-[13.5px] font-ui outline-none focus:border-white/20 transition-colors"
             />
             {errors.label && <p className="text-[#FF6B6B] text-[11px] mt-1">{errors.label.message}</p>}
@@ -148,7 +148,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                         value={newTagColor}
                         onChange={(e) => setNewTagColor(e.target.value)}
                         className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
-                        title="Kies kleur"
+                        title="Choose color"
                       />
                       <input
                         autoFocus
@@ -166,7 +166,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                           }
                           if (e.key === 'Escape') { setShowNewTag(false); setNewTagName('') }
                         }}
-                        placeholder="tag naam"
+                        placeholder="tag name"
                         className="bg-card border border-border rounded px-2 py-0.5 text-[11px] font-ui text-text outline-none focus:border-white/20 w-24"
                       />
                       <button
@@ -197,7 +197,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                       onClick={() => setShowNewTag(true)}
                       className="px-2 py-0.5 rounded border border-dashed border-white/15 text-[11px] font-ui text-white/30 hover:text-white/60 hover:border-white/30 cursor-pointer bg-transparent transition-colors"
                     >
-                      + nieuw
+                      + new
                     </button>
                   )}
                 </div>
@@ -217,9 +217,9 @@ export function AddTaskModal({ onClose, editTask }: Props) {
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
                   {([
-                    { value: 'daily', label: 'Dagelijks' },
-                    { value: 'recurring', label: 'Terugkerend (specifieke dag)' },
-                    { value: 'oneoff', label: 'Eenmalig (specifieke dag)' },
+                    { value: 'daily', label: 'Daily' },
+                    { value: 'recurring', label: 'Recurring (specific day)' },
+                    { value: 'oneoff', label: 'One-off (specific day)' },
                   ] as const).map(({ value, label }) => (
                     <label key={value} className="flex items-center gap-2.5 cursor-pointer">
                       <input
@@ -280,7 +280,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                     : 'border-red-500/40 bg-transparent text-red-400/70 hover:bg-red-500/10 hover:text-red-400'
                 }`}
               >
-                {confirmDelete ? 'Zeker weten?' : 'Verwijderen'}
+                {confirmDelete ? 'Are you sure?' : 'Delete'}
               </button>
             ) : (
               <span />
@@ -291,13 +291,13 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                 onClick={onClose}
                 className="px-4 py-1.5 rounded-md border border-border bg-transparent text-muted text-[13px] font-ui cursor-pointer transition-all duration-150 hover:bg-hover"
               >
-                Annuleren
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-4 py-1.5 rounded-md border-none bg-white/90 text-bg text-[13px] font-semibold font-ui cursor-pointer"
               >
-                {isEditing ? 'Opslaan' : 'Toevoegen'}
+                {isEditing ? 'Save' : 'Add'}
               </button>
             </div>
           </div>

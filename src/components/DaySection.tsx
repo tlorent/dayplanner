@@ -37,7 +37,7 @@ export function DaySection() {
   if (tasks.length === 0) {
     return (
       <p className="text-muted text-[13px] py-3">
-        {activeTag ? `Geen dag-specifieke taken voor '${activeTag}'.` : 'Geen dag-specifieke taken.'}
+        {activeTag ? `No day-specific tasks for '${activeTag}'.` : 'No day-specific tasks today. Enjoy life!'}
       </p>
     )
   }

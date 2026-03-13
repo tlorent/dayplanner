@@ -15,11 +15,11 @@ export const TAG_COLORS: Record<string, [string, string, string]> = {
 }
 
 export const DAYS: { label: string; short: string }[] = [
-  { label: 'Maandag', short: 'ma' },
-  { label: 'Dinsdag', short: 'di' },
-  { label: 'Woensdag', short: 'wo' },
-  { label: 'Donderdag', short: 'do' },
-  { label: 'Vrijdag', short: 'vr' },
+  { label: 'Monday',    short: 'mo' },
+  { label: 'Tuesday',   short: 'tu' },
+  { label: 'Wednesday', short: 'we' },
+  { label: 'Thursday',  short: 'th' },
+  { label: 'Friday',    short: 'fr' },
 ]
 
 // Daily recurring tasks (appear every day)
