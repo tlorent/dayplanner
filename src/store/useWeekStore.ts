@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Tag, DayIndex, Task, CheckedState } from '../types'
+import type { Tag, DayIndex, Task, CheckedState, CustomTag } from '../types'
 import { DAILY_TASKS, DAY_TASKS } from '../data/tasks'
+import { getSession } from '../auth'
 
 export function getWeekKey(): string {
   const now = new Date()
@@ -16,17 +17,28 @@ function getTodayIndex(): DayIndex | null {
   return (d - 1) as DayIndex
 }
 
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+
+export interface DisabledBuiltin {
+  id: string
+  disabledAt: number // timestamp ms
+}
+
+function isBuiltinUser(): boolean {
+  return getSession() !== 'lilith'
+}
+
 // Pure helper functions — safe to call outside of Zustand selectors
 export function selectDayTasks(
   customTasks: Task[],
   activeTag: Tag | null,
   day: DayIndex,
   order?: string[],
-  disabledBuiltinIds?: string[],
+  disabledBuiltins?: DisabledBuiltin[],
 ): Task[] {
   const weekKey = getWeekKey()
-  const disabled = new Set(disabledBuiltinIds ?? [])
-  const builtins = DAY_TASKS.filter((t) => !disabled.has(t.id))
+  const disabledIds = new Set((disabledBuiltins ?? []).map((d) => d.id))
+  const builtins = isBuiltinUser() ? DAY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
   const custom = customTasks.filter((t) => {
     if (t.dayIndex === undefined) return false
     if (t.oneOff && t.createdWeekKey !== weekKey) return false
@@ -40,9 +52,9 @@ export function selectDayTasks(
   return [...filtered].sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
 }
 
-export function selectDailyTasks(customTasks: Task[], activeTag: Tag | null, disabledBuiltinIds?: string[]): Task[] {
-  const disabled = new Set(disabledBuiltinIds ?? [])
-  const builtins = DAILY_TASKS.filter((t) => !disabled.has(t.id))
+export function selectDailyTasks(customTasks: Task[], activeTag: Tag | null, disabledBuiltins?: DisabledBuiltin[]): Task[] {
+  const disabledIds = new Set((disabledBuiltins ?? []).map((d) => d.id))
+  const builtins = isBuiltinUser() ? DAILY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
   const custom = customTasks.filter((t) => t.dayIndex === undefined)
   const all = [...builtins, ...custom]
   if (activeTag) return all.filter((t) => t.tags.includes(activeTag))
@@ -58,11 +70,11 @@ export function selectProgress(
   customTasks: Task[],
   activeTag: Tag | null,
   day: DayIndex,
-  disabledBuiltinIds?: string[],
+  disabledBuiltins?: DisabledBuiltin[],
 ): { done: number; total: number } {
   const all = [
-    ...selectDayTasks(customTasks, activeTag, day, undefined, disabledBuiltinIds),
-    ...selectDailyTasks(customTasks, activeTag, disabledBuiltinIds),
+    ...selectDayTasks(customTasks, activeTag, day, undefined, disabledBuiltins),
+    ...selectDailyTasks(customTasks, activeTag, disabledBuiltins),
   ]
   const weekChecked = checked[getWeekKey()] ?? {}
   const done = all.filter((t) => weekChecked[t.id]).length
@@ -74,11 +86,11 @@ export function selectDayProgress(
   checked: CheckedState,
   customTasks: Task[],
   day: DayIndex,
-  disabledBuiltinIds?: string[],
+  disabledBuiltins?: DisabledBuiltin[],
 ): { done: number; total: number } {
   const all = [
-    ...selectDayTasks(customTasks, null, day, undefined, disabledBuiltinIds),
-    ...selectDailyTasks(customTasks, null, disabledBuiltinIds),
+    ...selectDayTasks(customTasks, null, day, undefined, disabledBuiltins),
+    ...selectDailyTasks(customTasks, null, disabledBuiltins),
   ]
   const weekChecked = checked[getWeekKey()] ?? {}
   const done = all.filter((t) => weekChecked[t.id]).length
@@ -100,9 +112,10 @@ interface WeekStore {
   activeTag: Tag | null
   checked: CheckedState
   customTasks: Task[]
+  customTags: CustomTag[]
   collapsedGroups: Record<string, boolean>
-  dayTaskOrder: Record<number, string[]> // dayIndex -> ordered task ids
-  disabledBuiltinIds: string[]
+  dayTaskOrder: Record<number, string[]>
+  disabledBuiltins: DisabledBuiltin[]
   dailySectionOpen: boolean
 
   setActiveDay: (day: DayIndex) => void
@@ -115,9 +128,12 @@ interface WeekStore {
   disableBuiltin: (id: string) => void
   enableBuiltin: (id: string) => void
   enableAllBuiltins: () => void
+  purgeExpiredDisabled: () => void
   toggleGroup: (groupKey: string) => void
   reorderDayTasks: (day: DayIndex, orderedIds: string[]) => void
   setDailySectionOpen: (open: boolean) => void
+  addCustomTag: (tag: CustomTag) => void
+  removeCustomTag: (name: string) => void
 }
 
 export const useWeekStore = create<WeekStore>()(
@@ -127,9 +143,10 @@ export const useWeekStore = create<WeekStore>()(
       activeTag: null,
       checked: {},
       customTasks: [],
+      customTags: [],
       collapsedGroups: {},
       dayTaskOrder: {},
-      disabledBuiltinIds: [],
+      disabledBuiltins: [],
       dailySectionOpen: false,
 
       setActiveDay: (day) => set({ activeDay: day }),
@@ -148,13 +165,12 @@ export const useWeekStore = create<WeekStore>()(
       },
 
       resetDay: () => {
-        const { activeDay, checked, customTasks, disabledBuiltinIds } = get()
+        const { activeDay, checked, customTasks, disabledBuiltins } = get()
         const weekKey = getWeekKey()
         const weekChecked = { ...(checked[weekKey] ?? {}) }
-        // Reset ALL tasks for the day, regardless of active tag filter
         const allTasks = [
-          ...selectDayTasks(customTasks, null, activeDay, undefined, disabledBuiltinIds),
-          ...selectDailyTasks(customTasks, null, disabledBuiltinIds),
+          ...selectDayTasks(customTasks, null, activeDay, undefined, disabledBuiltins),
+          ...selectDailyTasks(customTasks, null, disabledBuiltins),
         ]
         allTasks.forEach((t) => { weekChecked[t.id] = false })
         set({ checked: { ...checked, [weekKey]: weekChecked } })
@@ -169,14 +185,11 @@ export const useWeekStore = create<WeekStore>()(
 
       removeTask: (id) =>
         set((s) => {
-          // Remove from customTasks
           const customTasks = s.customTasks.filter((t) => t.id !== id)
-          // Clean up dayTaskOrder
           const dayTaskOrder: Record<number, string[]> = {}
           for (const [day, ids] of Object.entries(s.dayTaskOrder)) {
             dayTaskOrder[Number(day)] = (ids as string[]).filter((tid) => tid !== id)
           }
-          // Clean up checked state
           const checked: CheckedState = {}
           for (const [weekKey, weekChecked] of Object.entries(s.checked)) {
             const { [id]: _removed, ...rest } = weekChecked
@@ -187,36 +200,53 @@ export const useWeekStore = create<WeekStore>()(
 
       disableBuiltin: (id) =>
         set((s) => ({
-          disabledBuiltinIds: s.disabledBuiltinIds.includes(id)
-            ? s.disabledBuiltinIds
-            : [...s.disabledBuiltinIds, id],
+          disabledBuiltins: s.disabledBuiltins.some((d) => d.id === id)
+            ? s.disabledBuiltins
+            : [...s.disabledBuiltins, { id, disabledAt: Date.now() }],
         })),
 
       enableBuiltin: (id) =>
-        set((s) => ({ disabledBuiltinIds: s.disabledBuiltinIds.filter((i) => i !== id) })),
+        set((s) => ({ disabledBuiltins: s.disabledBuiltins.filter((d) => d.id !== id) })),
 
-      enableAllBuiltins: () => set({ disabledBuiltinIds: [] }),
+      enableAllBuiltins: () => set({ disabledBuiltins: [] }),
+
+      purgeExpiredDisabled: () =>
+        set((s) => ({
+          disabledBuiltins: s.disabledBuiltins.filter(
+            (d) => Date.now() - d.disabledAt < TWENTY_FOUR_HOURS
+          ),
+        })),
 
       reorderDayTasks: (day, orderedIds) =>
         set((s) => ({ dayTaskOrder: { ...s.dayTaskOrder, [day]: orderedIds } })),
 
       toggleGroup: (groupKey) =>
         set((s) => ({
-          // undefined/true = collapsed; false = expanded. Toggle flips between them.
           collapsedGroups: { ...s.collapsedGroups, [groupKey]: s.collapsedGroups[groupKey] === false },
         })),
 
       setDailySectionOpen: (open) => set({ dailySectionOpen: open }),
+
+      addCustomTag: (tag) =>
+        set((s) => ({
+          customTags: s.customTags.some((t) => t.name === tag.name)
+            ? s.customTags
+            : [...s.customTags, tag],
+        })),
+
+      removeCustomTag: (name) =>
+        set((s) => ({ customTags: s.customTags.filter((t) => t.name !== name) })),
     }),
     {
       name: 'weekplanning-state',
       partialize: (s) => ({
         checked: s.checked,
         customTasks: s.customTasks,
+        customTags: s.customTags,
         collapsedGroups: s.collapsedGroups,
         dayTaskOrder: s.dayTaskOrder,
         activeDay: s.activeDay,
-        disabledBuiltinIds: s.disabledBuiltinIds,
+        disabledBuiltins: s.disabledBuiltins,
         dailySectionOpen: s.dailySectionOpen,
       }),
     }

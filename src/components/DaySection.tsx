@@ -19,9 +19,9 @@ export function DaySection() {
   const activeTag = useWeekStore((s) => s.activeTag)
   const customTasks = useWeekStore((s) => s.customTasks)
   const order = useWeekStore((s) => s.dayTaskOrder[s.activeDay])
-  const disabledBuiltinIds = useWeekStore((s) => s.disabledBuiltinIds)
+  const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
   const reorderDayTasks = useWeekStore((s) => s.reorderDayTasks)
-  const tasks = selectDayTasks(customTasks, activeTag, activeDay, order, disabledBuiltinIds)
+  const tasks = selectDayTasks(customTasks, activeTag, activeDay, order, disabledBuiltins)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 

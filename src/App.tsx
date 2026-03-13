@@ -4,7 +4,11 @@ import { DAYS, TAGS, TAG_COLORS } from './data/tasks'
 import { DaySection } from './components/DaySection'
 import { DailySection } from './components/DailySection'
 import { AddTaskModal } from './components/AddTaskModal'
-import { useState } from 'react'
+import { RestoreTasksModal } from './components/RestoreTasksModal'
+import { Logo } from './components/Logo'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { logout, getSession } from './auth'
 
 function getTodayIndex(): DayIndex | null {
   const d = new Date().getDay()
@@ -12,24 +16,49 @@ function getTodayIndex(): DayIndex | null {
   return (d - 1) as DayIndex
 }
 
+function getWeekDates(): string[] {
+  const now = new Date()
+  const day = now.getDay() // 0=sun
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+  })
+}
+
 export default function App() {
+  const navigate = useNavigate()
+  const session = getSession()
+
+  function handleLogout() {
+    logout()
+    navigate('/')
+  }
+
   const activeDay = useWeekStore((s) => s.activeDay)
   const activeTag = useWeekStore((s) => s.activeTag)
   const setActiveDay = useWeekStore((s) => s.setActiveDay)
   const setActiveTag = useWeekStore((s) => s.setActiveTag)
   const resetDay = useWeekStore((s) => s.resetDay)
-  const enableAllBuiltins = useWeekStore((s) => s.enableAllBuiltins)
   const checked = useWeekStore((s) => s.checked)
   const customTasks = useWeekStore((s) => s.customTasks)
-  const disabledBuiltinIds = useWeekStore((s) => s.disabledBuiltinIds)
+  const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
+  const purgeExpiredDisabled = useWeekStore((s) => s.purgeExpiredDisabled)
   const dailySectionOpen = useWeekStore((s) => s.dailySectionOpen)
   const setDailySectionOpen = useWeekStore((s) => s.setDailySectionOpen)
+  const customTags = useWeekStore((s) => s.customTags)
 
-  const progress = selectProgress(checked, customTasks, activeTag, activeDay, disabledBuiltinIds)
+  useEffect(() => { purgeExpiredDisabled() }, [])
+
+  const progress = selectProgress(checked, customTasks, activeTag, activeDay, disabledBuiltins)
 
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showRestoreModal, setShowRestoreModal] = useState(false)
 
   const todayIndex = getTodayIndex()
+  const weekDates = getWeekDates()
   const progressPct = progress.total > 0 ? (progress.done / progress.total) * 100 : 0
 
   const handleResetDay = () => {
@@ -43,12 +72,9 @@ export default function App() {
       {/* Topbar */}
       <header className="sticky top-0 z-100 bg-elevated border-b border-border backdrop-blur-md">
         <div className="px-6 h-13 flex items-center gap-4">
+          <Logo size={22} />
           <span className="font-display font-extrabold text-[22px] leading-none text-white/90 shrink-0" style={{ letterSpacing: '-0.5px' }}>
-            Tim
-          </span>
-          <span className="w-px h-3.5 bg-white/10 shrink-0" />
-          <span className="text-[13px] font-semibold text-white/60 tracking-[0.04em] shrink-0">
-            Weekplanning
+            Dunzo
           </span>
           <span className="w-px h-3.5 bg-white/10 shrink-0" />
 
@@ -67,6 +93,23 @@ export default function App() {
               {Math.round(progressPct)}%
             </span>
           </div>
+
+          {/* User + logout */}
+          <div className="ml-auto flex items-center gap-2.5">
+            <img
+              src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(session ?? '')}`}
+              alt={session ?? ''}
+              className="w-7 h-7 rounded-full bg-card shrink-0"
+            />
+            <span className="font-display text-[15px] text-white/90 capitalize">{session}</span>
+            <span className="w-px h-3.5 bg-white/10 shrink-0" />
+            <button
+              onClick={handleLogout}
+              className="px-2.5 py-1.5 rounded-md border-none bg-transparent font-ui text-[12px] text-white/40 cursor-pointer hover:bg-hover hover:text-white/70 transition-colors duration-150"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -74,7 +117,7 @@ export default function App() {
       <div className="flex min-h-[calc(100vh-52px)]">
 
         {/* Left sidebar */}
-        <aside className="fade-up delay-0 w-52 shrink-0 sticky top-13 self-start h-[calc(100vh-52px)] bg-elevated flex-col px-4 py-6 overflow-y-auto hidden md:flex" style={{ borderRight: '1px solid rgba(200,146,42,0.12)' }}>
+        <aside className="fade-up delay-0 w-52 shrink-0 sticky top-13 self-start h-[calc(100vh-52px)] bg-elevated flex-col px-4 py-6 overflow-y-auto hidden md:flex" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
 
           {/* Day nav */}
           <div>
@@ -85,7 +128,7 @@ export default function App() {
               {DAYS.map((day, i) => {
                 const isActive = activeDay === i
                 const isToday = todayIndex === i
-                const dp = selectDayProgress(checked, customTasks, i as DayIndex, disabledBuiltinIds)
+                const dp = selectDayProgress(checked, customTasks, i as DayIndex, disabledBuiltins)
                 return (
                   <button
                     key={i}
@@ -124,18 +167,20 @@ export default function App() {
               >
                 Alles
               </button>
-              {[...TAGS].sort().map((tag) => {
-                const [color] = TAG_COLORS[tag] ?? ['rgba(255,255,255,0.4)']
-                const isActive = activeTag === tag
+              {[
+                ...(session !== 'lilith' ? [...TAGS].sort().map((name) => ({ name, color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)' })) : []),
+                ...customTags.map((t) => ({ name: t.name, color: t.color })),
+              ].map(({ name, color }) => {
+                const isActive = activeTag === name
                 return (
                   <button
-                    key={tag}
-                    onClick={() => setActiveTag(isActive ? null : tag as Tag)}
+                    key={name}
+                    onClick={() => setActiveTag(isActive ? null : name as Tag)}
                     className="flex items-center gap-2 px-2.5 py-1.25 rounded-md border-none font-ui text-[12px] cursor-pointer text-left transition-all duration-150 hover:bg-hover"
                     style={{ color: isActive ? color : 'rgba(255,255,255,0.5)', background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent' }}
                   >
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
-                    {tag}
+                    {name}
                   </button>
                 )
               })}
@@ -143,13 +188,13 @@ export default function App() {
           </div>
 
           {/* Restore hidden built-ins — only shown when some are hidden */}
-          {disabledBuiltinIds.length > 0 && (
+          {disabledBuiltins.length > 0 && (
             <button
-              onClick={enableAllBuiltins}
+              onClick={() => setShowRestoreModal(true)}
               className="w-full text-left px-2.5 py-1.5 rounded-md border-none bg-transparent font-ui text-[11px] cursor-pointer transition-all duration-150 hover:bg-hover mb-2"
               style={{ color: 'rgba(255,255,255,0.35)' }}
             >
-              ↩ {disabledBuiltinIds.length} verborgen {disabledBuiltinIds.length !== 1 ? 'taken' : 'taak'} herstellen
+              ↩ {disabledBuiltins.length} verborgen {disabledBuiltins.length !== 1 ? 'taken' : 'taak'}
             </button>
           )}
 
@@ -172,9 +217,12 @@ export default function App() {
 
           {/* Day title */}
           <div className="fade-up delay-1 mb-8">
-            <h1 className="font-display font-extrabold text-[42px] md:text-[72px] leading-none text-white/92 m-0" style={{ letterSpacing: '-1.5px' }}>
-              {DAYS[activeDay].label}
-            </h1>
+            <div className="flex items-baseline gap-4">
+              <h1 className="font-display font-extrabold text-[42px] md:text-[72px] leading-none text-white/92 m-0" style={{ letterSpacing: '-1.5px' }}>
+                {DAYS[activeDay].label}
+              </h1>
+              <span className="font-ui text-[18px] font-medium text-white/70 tabular-nums">{weekDates[activeDay]}</span>
+            </div>
             {todayIndex === activeDay && (
               <p className="m-0 mt-1.5 font-ui text-[11px] font-semibold tracking-[0.12em] uppercase" style={{ color: '#C8922A' }}>
                 — Vandaag
@@ -253,6 +301,7 @@ export default function App() {
       </div>
 
       {showAddModal && <AddTaskModal onClose={() => setShowAddModal(false)} />}
+      {showRestoreModal && <RestoreTasksModal onClose={() => setShowRestoreModal(false)} />}
     </div>
   )
 }

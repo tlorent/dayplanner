@@ -1,4 +1,4 @@
-export type Tag = 'bc' | 'pingpilot' | 'hyf' | 'leeskring' | 'sudo' | 'leren' | 'linkedin' | 'instagram'
+export type Tag = string
 
 export type DayIndex = 0 | 1 | 2 | 3 | 4
 
@@ -16,4 +16,9 @@ export interface CheckedState {
   [weekKey: string]: {
     [taskId: string]: boolean
   }
+}
+
+export interface CustomTag {
+  name: string  // used as the tag id
+  color: string // hex color chosen by user
 }

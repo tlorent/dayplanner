@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import type { Tag, DayIndex, Task } from '../types'
 import { useWeekStore, getWeekKey } from '../store/useWeekStore'
 import { TAGS, DAYS } from '../data/tasks'
+import { getSession } from '../auth'
 import { TagChip } from './TagChip'
 
 const schema = z.object({
@@ -18,7 +19,7 @@ type FormValues = z.infer<typeof schema>
 
 interface Props {
   onClose: () => void
-  editTask?: Task // if provided, opens in edit mode
+  editTask?: Task
 }
 
 function taskToFormValues(task: Task, activeDay: DayIndex): FormValues {
@@ -38,7 +39,12 @@ export function AddTaskModal({ onClose, editTask }: Props) {
   const updateTask = useWeekStore((s) => s.updateTask)
   const removeTask = useWeekStore((s) => s.removeTask)
   const activeDay = useWeekStore((s) => s.activeDay)
+  const customTags = useWeekStore((s) => s.customTags)
+  const addCustomTag = useWeekStore((s) => s.addCustomTag)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [newTagName, setNewTagName] = useState('')
+  const [newTagColor, setNewTagColor] = useState('#7c9ef5')
+  const [showNewTag, setShowNewTag] = useState(false)
 
   const isEditing = !!editTask
 
@@ -74,6 +80,12 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     removeTask(editTask.id)
     onClose()
   }
+
+  const session = getSession()
+  const allTags = [
+    ...(session !== 'lilith' ? TAGS.map((name) => ({ name, color: undefined as string | undefined })) : []),
+    ...customTags.map((t) => ({ name: t.name, color: t.color })),
+  ]
 
   return (
     <div
@@ -111,21 +123,83 @@ export function AddTaskModal({ onClose, editTask }: Props) {
               control={control}
               render={({ field }) => (
                 <div className="flex flex-wrap gap-1.5">
-                  {TAGS.map((tag) => {
-                    const active = field.value.includes(tag)
+                  {allTags.map(({ name, color }) => {
+                    const active = field.value.includes(name)
                     return (
                       <TagChip
-                        key={tag}
-                        tag={tag as Tag}
+                        key={name}
+                        tag={name}
+                        color={color}
                         active={active}
                         onClick={() => {
                           field.onChange(
-                            active ? field.value.filter((t) => t !== tag) : [...field.value, tag]
+                            active ? field.value.filter((t) => t !== name) : [...field.value, name]
                           )
                         }}
                       />
                     )
                   })}
+
+                  {/* Add new tag */}
+                  {showNewTag ? (
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <input
+                        type="color"
+                        value={newTagColor}
+                        onChange={(e) => setNewTagColor(e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
+                        title="Kies kleur"
+                      />
+                      <input
+                        autoFocus
+                        value={newTagName}
+                        onChange={(e) => setNewTagName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            const name = newTagName.trim().toLowerCase()
+                            if (!name) return
+                            addCustomTag({ name, color: newTagColor })
+                            field.onChange([...field.value, name])
+                            setNewTagName('')
+                            setShowNewTag(false)
+                          }
+                          if (e.key === 'Escape') { setShowNewTag(false); setNewTagName('') }
+                        }}
+                        placeholder="tag naam"
+                        className="bg-card border border-border rounded px-2 py-0.5 text-[11px] font-ui text-text outline-none focus:border-white/20 w-24"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const name = newTagName.trim().toLowerCase()
+                          if (!name) return
+                          addCustomTag({ name, color: newTagColor })
+                          field.onChange([...field.value, name])
+                          setNewTagName('')
+                          setShowNewTag(false)
+                        }}
+                        className="text-[11px] font-ui text-white/50 hover:text-white/80 cursor-pointer border-none bg-transparent px-1"
+                      >
+                        ↵
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowNewTag(false); setNewTagName('') }}
+                        className="text-[11px] font-ui text-white/30 hover:text-white/60 cursor-pointer border-none bg-transparent px-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowNewTag(true)}
+                      className="px-2 py-0.5 rounded border border-dashed border-white/15 text-[11px] font-ui text-white/30 hover:text-white/60 hover:border-white/30 cursor-pointer bg-transparent transition-colors"
+                    >
+                      + nieuw
+                    </button>
+                  )}
                 </div>
               )}
             />

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { Task } from '../types'
 import { useWeekStore, selectIsChecked } from '../store/useWeekStore'
 import { TagChip } from './TagChip'
+import { TAG_COLORS } from '../data/tasks'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AddTaskModal } from './AddTaskModal'
@@ -39,6 +40,7 @@ export function TaskRow({ task, sortable }: Props) {
   }, [isChecked])
 
   const isCustom = task.source === 'custom'
+  const customTags = useWeekStore((s) => s.customTags)
 
   const handleActionClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -105,9 +107,11 @@ export function TaskRow({ task, sortable }: Props) {
 
         {/* Tags */}
         <div className="flex gap-1">
-          {task.tags.map((tag) => (
-            <TagChip key={tag} tag={tag} size="xs" />
-          ))}
+          {task.tags.map((tag) => {
+            const customColor = customTags.find((t) => t.name === tag)?.color
+            const color = customColor ?? TAG_COLORS[tag]?.[0]
+            return <TagChip key={tag} tag={tag} color={color} size="xs" />
+          })}
         </div>
 
         {/* Edit / Hide button — zero width when hidden (no horizontal space), full width on hover */}

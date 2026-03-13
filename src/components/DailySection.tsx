@@ -17,8 +17,8 @@ export function DailySection() {
   const activeTag = useWeekStore((s) => s.activeTag)
   const customTasks = useWeekStore((s) => s.customTasks)
   const checked = useWeekStore((s) => s.checked)
-  const disabledBuiltinIds = useWeekStore((s) => s.disabledBuiltinIds)
-  const tasks = selectDailyTasks(customTasks, activeTag, disabledBuiltinIds)
+  const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
+  const tasks = selectDailyTasks(customTasks, activeTag, disabledBuiltins)
   const toggleGroup = useWeekStore((s) => s.toggleGroup)
   const collapsedGroups = useWeekStore((s) => s.collapsedGroups)
 
