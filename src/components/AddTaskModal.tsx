@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { Tag, DayIndex, Task } from '../types'
-import { useWeekStore, getWeekKey } from '../store/useWeekStore'
-import { TAGS, DAYS } from '../data/tasks'
 import { useUser } from '@stackframe/react'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { DAYS, TAGS } from '../data/tasks'
+import { getWeekKey, useWeekStore } from '../store/useWeekStore'
+import type { DayIndex, Tag, Task } from '../types'
 import { TagChip } from './TagChip'
 
 const schema = z.object({
@@ -48,7 +48,13 @@ export function AddTaskModal({ onClose, editTask }: Props) {
 
   const isEditing = !!editTask
 
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: editTask
       ? taskToFormValues(editTask, activeDay)
@@ -61,7 +67,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     const patch: Partial<Task> = {
       label: data.label,
       tags: data.tags as Tag[],
-      dayIndex: data.type !== 'daily' ? data.dayIndex as DayIndex : undefined,
+      dayIndex: data.type !== 'daily' ? (data.dayIndex as DayIndex) : undefined,
       oneOff: data.type === 'oneoff',
       createdWeekKey: data.type === 'oneoff' ? getWeekKey() : undefined,
     }
@@ -69,13 +75,20 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     if (isEditing && editTask) {
       updateTask(editTask.id, patch)
     } else {
-      addTask({ id: `custom-${Date.now()}`, source: 'custom', ...patch } as Task)
+      addTask({
+        id: `custom-${Date.now()}`,
+        source: 'custom',
+        ...patch,
+      } as Task)
     }
     onClose()
   }
 
   const handleDelete = () => {
-    if (!confirmDelete) { setConfirmDelete(true); return }
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      return
+    }
     if (!editTask) return
     removeTask(editTask.id)
     onClose()
@@ -84,14 +97,18 @@ export function AddTaskModal({ onClose, editTask }: Props) {
   const user = useUser()
   const isTim = user?.primaryEmail === import.meta.env.VITE_ADMIN_EMAIL
   const allTags = [
-    ...(isTim ? TAGS.map((name) => ({ name, color: undefined as string | undefined })) : []),
+    ...(isTim
+      ? TAGS.map((name) => ({ name, color: undefined as string | undefined }))
+      : []),
     ...customTags.map((t) => ({ name: t.name, color: t.color })),
   ]
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: backdrop click-to-close pattern
     <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-1000 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
     >
       <div className="bg-elevated border border-border rounded-xl p-6 w-95 max-w-[90vw]">
         <h3 className="m-0 mb-5 text-[15px] font-semibold text-text">
@@ -99,26 +116,32 @@ export function AddTaskModal({ onClose, editTask }: Props) {
         </h3>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-
           {/* Label */}
           <div>
-            <label className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-1.5">
+            <label
+              htmlFor="task-label"
+              className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-1.5"
+            >
               Taak
             </label>
             <input
               {...register('label')}
-              autoFocus
+              id="task-label"
               placeholder="What needs to be done?"
               className="w-full bg-card border border-border rounded-md px-3 py-2 text-text text-[13.5px] font-ui outline-none focus:border-white/20 transition-colors"
             />
-            {errors.label && <p className="text-[#FF6B6B] text-[11px] mt-1">{errors.label.message}</p>}
+            {errors.label && (
+              <p className="text-[#FF6B6B] text-[11px] mt-1">
+                {errors.label.message}
+              </p>
+            )}
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
+            <p className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
               Tags
-            </label>
+            </p>
             <Controller
               name="tags"
               control={control}
@@ -134,7 +157,9 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                         active={active}
                         onClick={() => {
                           field.onChange(
-                            active ? field.value.filter((t) => t !== name) : [...field.value, name]
+                            active
+                              ? field.value.filter((t) => t !== name)
+                              : [...field.value, name],
                           )
                         }}
                       />
@@ -152,6 +177,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                         title="Choose color"
                       />
                       <input
+                        // biome-ignore lint/a11y/noAutofocus: intentional — focuses inline input on reveal
                         autoFocus
                         value={newTagName}
                         onChange={(e) => setNewTagName(e.target.value)}
@@ -165,7 +191,10 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                             setNewTagName('')
                             setShowNewTag(false)
                           }
-                          if (e.key === 'Escape') { setShowNewTag(false); setNewTagName('') }
+                          if (e.key === 'Escape') {
+                            setShowNewTag(false)
+                            setNewTagName('')
+                          }
                         }}
                         placeholder="tag name"
                         className="bg-card border border-border rounded px-2 py-0.5 text-[11px] font-ui text-text outline-none focus:border-white/20 w-24"
@@ -186,7 +215,10 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setShowNewTag(false); setNewTagName('') }}
+                        onClick={() => {
+                          setShowNewTag(false)
+                          setNewTagName('')
+                        }}
                         className="text-[11px] font-ui text-white/30 hover:text-white/60 cursor-pointer border-none bg-transparent px-1"
                       >
                         ✕
@@ -204,32 +236,43 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                 </div>
               )}
             />
-            {errors.tags && <p className="text-[#FF6B6B] text-[11px] mt-1">{errors.tags.message}</p>}
+            {errors.tags && (
+              <p className="text-[#FF6B6B] text-[11px] mt-1">
+                {errors.tags.message}
+              </p>
+            )}
           </div>
 
           {/* Frequency */}
           <div>
-            <label className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
+            <p className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
               Frequency
-            </label>
+            </p>
             <Controller
               name="type"
               control={control}
               render={({ field }) => (
                 <div className="flex flex-col gap-2">
-                  {([
-                    { value: 'daily', label: 'Daily' },
-                    { value: 'recurring', label: 'Recurring (specific day)' },
-                    { value: 'oneoff', label: 'One-off (specific day)' },
-                  ] as const).map(({ value, label }) => (
-                    <label key={value} className="flex items-center gap-2.5 cursor-pointer">
+                  {(
+                    [
+                      { value: 'daily', label: 'Daily' },
+                      { value: 'recurring', label: 'Recurring (specific day)' },
+                      { value: 'oneoff', label: 'One-off (specific day)' },
+                    ] as const
+                  ).map(({ value, label }) => (
+                    <label
+                      key={value}
+                      className="flex items-center gap-2.5 cursor-pointer"
+                    >
                       <input
                         type="radio"
                         checked={field.value === value}
                         onChange={() => field.onChange(value)}
                         className="accent-white w-3.5 h-3.5 cursor-pointer"
                       />
-                      <span className="text-[13px] font-ui text-text">{label}</span>
+                      <span className="text-[13px] font-ui text-text">
+                        {label}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -240,9 +283,9 @@ export function AddTaskModal({ onClose, editTask }: Props) {
           {/* Day selector */}
           {type !== 'daily' && (
             <div>
-              <label className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
+              <p className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
                 Dag
-              </label>
+              </p>
               <Controller
                 name="dayIndex"
                 control={control}
@@ -250,6 +293,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                   <div className="flex gap-1.5">
                     {DAYS.map((d, i) => (
                       <button
+                        // biome-ignore lint/suspicious/noArrayIndexKey: DAYS is a fixed ordered array
                         key={i}
                         type="button"
                         onClick={() => field.onChange(i)}

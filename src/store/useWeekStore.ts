@@ -1,12 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Tag, DayIndex, Task, CheckedState, CustomTag } from '../types'
 import { DAILY_TASKS, DAY_TASKS } from '../data/tasks'
+import type { CheckedState, CustomTag, DayIndex, Tag, Task } from '../types'
 
 export function getWeekKey(): string {
   const now = new Date()
   const jan1 = new Date(now.getFullYear(), 0, 1)
-  const week = Math.ceil(((now.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7)
+  const week = Math.ceil(
+    ((now.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7,
+  )
   return `${now.getFullYear()}-W${week}`
 }
 
@@ -52,7 +54,9 @@ export function selectDayTasks(
 ): Task[] {
   const weekKey = getWeekKey()
   const disabledIds = new Set((disabledBuiltins ?? []).map((d) => d.id))
-  const builtins = _showBuiltins ? DAY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
+  const builtins = _showBuiltins
+    ? DAY_TASKS.filter((t) => !disabledIds.has(t.id))
+    : []
   const custom = customTasks.filter((t) => {
     if (t.dayIndex === undefined) return false
     if (t.oneOff && t.createdWeekKey !== weekKey) return false
@@ -63,19 +67,30 @@ export function selectDayTasks(
   if (activeTag) filtered = filtered.filter((t) => t.tags.includes(activeTag))
   if (!order) return filtered
   const orderMap = new Map(order.map((id, i) => [id, i]))
-  return [...filtered].sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999))
+  return [...filtered].sort(
+    (a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999),
+  )
 }
 
-export function selectDailyTasks(customTasks: Task[], activeTag: Tag | null, disabledBuiltins?: DisabledBuiltin[]): Task[] {
+export function selectDailyTasks(
+  customTasks: Task[],
+  activeTag: Tag | null,
+  disabledBuiltins?: DisabledBuiltin[],
+): Task[] {
   const disabledIds = new Set((disabledBuiltins ?? []).map((d) => d.id))
-  const builtins = _showBuiltins ? DAILY_TASKS.filter((t) => !disabledIds.has(t.id)) : []
+  const builtins = _showBuiltins
+    ? DAILY_TASKS.filter((t) => !disabledIds.has(t.id))
+    : []
   const custom = customTasks.filter((t) => t.dayIndex === undefined)
   const all = [...builtins, ...custom]
   if (activeTag) return all.filter((t) => t.tags.includes(activeTag))
   return all
 }
 
-export function selectIsChecked(checked: CheckedState, taskId: string): boolean {
+export function selectIsChecked(
+  checked: CheckedState,
+  taskId: string,
+): boolean {
   return checked[getWeekKey()]?.[taskId] ?? false
 }
 
@@ -183,18 +198,29 @@ export const useWeekStore = create<WeekStore>()(
         const weekKey = getWeekKey()
         const weekChecked = { ...(checked[weekKey] ?? {}) }
         const allTasks = [
-          ...selectDayTasks(customTasks, null, activeDay, undefined, disabledBuiltins),
+          ...selectDayTasks(
+            customTasks,
+            null,
+            activeDay,
+            undefined,
+            disabledBuiltins,
+          ),
           ...selectDailyTasks(customTasks, null, disabledBuiltins),
         ]
-        allTasks.forEach((t) => { weekChecked[t.id] = false })
+        allTasks.forEach((t) => {
+          weekChecked[t.id] = false
+        })
         set({ checked: { ...checked, [weekKey]: weekChecked } })
       },
 
-      addTask: (task) => set((s) => ({ customTasks: [...s.customTasks, task] })),
+      addTask: (task) =>
+        set((s) => ({ customTasks: [...s.customTasks, task] })),
 
       updateTask: (id, patch) =>
         set((s) => ({
-          customTasks: s.customTasks.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+          customTasks: s.customTasks.map((t) =>
+            t.id === id ? { ...t, ...patch } : t,
+          ),
         })),
 
       removeTask: (id) =>
@@ -202,7 +228,9 @@ export const useWeekStore = create<WeekStore>()(
           const customTasks = s.customTasks.filter((t) => t.id !== id)
           const dayTaskOrder: Record<number, string[]> = {}
           for (const [day, ids] of Object.entries(s.dayTaskOrder)) {
-            dayTaskOrder[Number(day)] = (ids as string[]).filter((tid) => tid !== id)
+            dayTaskOrder[Number(day)] = (ids as string[]).filter(
+              (tid) => tid !== id,
+            )
           }
           const checked: CheckedState = {}
           for (const [weekKey, weekChecked] of Object.entries(s.checked)) {
@@ -220,23 +248,30 @@ export const useWeekStore = create<WeekStore>()(
         })),
 
       enableBuiltin: (id) =>
-        set((s) => ({ disabledBuiltins: s.disabledBuiltins.filter((d) => d.id !== id) })),
+        set((s) => ({
+          disabledBuiltins: s.disabledBuiltins.filter((d) => d.id !== id),
+        })),
 
       enableAllBuiltins: () => set({ disabledBuiltins: [] }),
 
       purgeExpiredDisabled: () =>
         set((s) => ({
           disabledBuiltins: s.disabledBuiltins.filter(
-            (d) => Date.now() - d.disabledAt < TWENTY_FOUR_HOURS
+            (d) => Date.now() - d.disabledAt < TWENTY_FOUR_HOURS,
           ),
         })),
 
       reorderDayTasks: (day, orderedIds) =>
-        set((s) => ({ dayTaskOrder: { ...s.dayTaskOrder, [day]: orderedIds } })),
+        set((s) => ({
+          dayTaskOrder: { ...s.dayTaskOrder, [day]: orderedIds },
+        })),
 
       toggleGroup: (groupKey) =>
         set((s) => ({
-          collapsedGroups: { ...s.collapsedGroups, [groupKey]: s.collapsedGroups[groupKey] === false },
+          collapsedGroups: {
+            ...s.collapsedGroups,
+            [groupKey]: s.collapsedGroups[groupKey] === false,
+          },
         })),
 
       setDailySectionOpen: (open) => set({ dailySectionOpen: open }),
@@ -249,7 +284,9 @@ export const useWeekStore = create<WeekStore>()(
         })),
 
       removeCustomTag: (name) =>
-        set((s) => ({ customTags: s.customTags.filter((t) => t.name !== name) })),
+        set((s) => ({
+          customTags: s.customTags.filter((t) => t.name !== name),
+        })),
     }),
     {
       name: 'weekplanning-state',
@@ -263,6 +300,6 @@ export const useWeekStore = create<WeekStore>()(
         disabledBuiltins: s.disabledBuiltins,
         dailySectionOpen: s.dailySectionOpen,
       }),
-    }
-  )
+    },
+  ),
 )

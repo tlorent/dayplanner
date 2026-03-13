@@ -26,11 +26,16 @@ export function TagChip({ tag, color, active, onClick, size = 'sm' }: Props) {
     bg = `rgba(${r},${g},${b},0.12)`
     border = `rgba(${r},${g},${b},0.3)`
   } else {
-    ;[textColor, bg, border] = TAG_COLORS[tag] ?? ['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.055)', 'rgba(255,255,255,0.09)']
+    ;[textColor, bg, border] = TAG_COLORS[tag] ?? [
+      'rgba(255,255,255,0.5)',
+      'rgba(255,255,255,0.055)',
+      'rgba(255,255,255,0.09)',
+    ]
   }
 
   return (
     <button
+      type="button"
       onClick={onClick}
       style={{
         background: bg,

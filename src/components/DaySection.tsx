@@ -1,18 +1,18 @@
-import { useWeekStore, selectDayTasks } from '../store/useWeekStore'
-import { TaskRow } from './TaskRow'
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  type DragEndEvent,
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from '@dnd-kit/core'
 import {
+  arrayMove,
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
 } from '@dnd-kit/sortable'
+import { selectDayTasks, useWeekStore } from '../store/useWeekStore'
+import { TaskRow } from './TaskRow'
 
 export function DaySection() {
   const activeDay = useWeekStore((s) => s.activeDay)
@@ -21,9 +21,17 @@ export function DaySection() {
   const order = useWeekStore((s) => s.dayTaskOrder[s.activeDay])
   const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
   const reorderDayTasks = useWeekStore((s) => s.reorderDayTasks)
-  const tasks = selectDayTasks(customTasks, activeTag, activeDay, order, disabledBuiltins)
+  const tasks = selectDayTasks(
+    customTasks,
+    activeTag,
+    activeDay,
+    order,
+    disabledBuiltins,
+  )
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  )
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -37,14 +45,23 @@ export function DaySection() {
   if (tasks.length === 0) {
     return (
       <p className="text-muted text-[13px] py-3">
-        {activeTag ? `No day-specific tasks for '${activeTag}'.` : 'No day-specific tasks today. Enjoy life!'}
+        {activeTag
+          ? `No day-specific tasks for '${activeTag}'.`
+          : 'No day-specific tasks today. Enjoy life!'}
       </p>
     )
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={tasks.map((t) => t.id)}
+        strategy={verticalListSortingStrategy}
+      >
         <div className="bg-card rounded-lg overflow-hidden border border-border">
           {tasks.map((task) => (
             <TaskRow key={task.id} task={task} sortable />

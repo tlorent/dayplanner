@@ -6,15 +6,18 @@ import { Logo } from '../components/Logo'
 const features = [
   {
     title: 'Plan your week',
-    description: 'Organize tasks by day and recurring daily habits in one place.',
+    description:
+      'Organize tasks by day and recurring daily habits in one place.',
   },
   {
     title: 'Focus with tags',
-    description: 'Filter tasks by project or area so you only see what matters right now.',
+    description:
+      'Filter tasks by project or area so you only see what matters right now.',
   },
   {
     title: 'Track progress',
-    description: "A live progress bar keeps you honest about what's actually getting done.",
+    description:
+      "A live progress bar keeps you honest about what's actually getting done.",
   },
 ]
 
@@ -39,8 +42,14 @@ const howItWorks = [
 const versus = [
   { them: 'Sprawling project hierarchies', us: 'One week. Five days. Done.' },
   { them: 'Onboarding flows and tutorials', us: 'Open it. It just works.' },
-  { them: 'Notifications, nudges, streaks', us: 'Silent. You know what to do.' },
-  { them: 'Monthly subscription to check a box', us: 'Free. No account needed.' },
+  {
+    them: 'Notifications, nudges, streaks',
+    us: 'Silent. You know what to do.',
+  },
+  {
+    them: 'Monthly subscription to check a box',
+    us: 'Free. No account needed.',
+  },
 ]
 
 // ─── SVG dot-grid background ──────────────────────────────────────────────────
@@ -64,7 +73,7 @@ function HeroDotGrid() {
 
   return (
     <svg
-      aria-hidden
+      aria-hidden="true"
       width="100%"
       height="100%"
       viewBox={`0 0 ${w} ${h}`}
@@ -72,7 +81,14 @@ function HeroDotGrid() {
       className="hero-dot-grid"
     >
       {dots.map((d, i) => (
-        <circle key={i} cx={d.cx} cy={d.cy} r={1.1} fill="rgba(200,146,42,0.45)" />
+        <circle
+          // biome-ignore lint/suspicious/noArrayIndexKey: static generated dot grid
+          key={i}
+          cx={d.cx}
+          cy={d.cy}
+          r={1.1}
+          fill="rgba(200,146,42,0.45)"
+        />
       ))}
     </svg>
   )
@@ -83,7 +99,6 @@ function HeroDotGrid() {
 export default function Landing() {
   return (
     <div className="flex flex-col min-h-screen text-text">
-
       {/* ── Nav ── */}
       <header className="nav-header sticky top-0 z-50 w-full">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between h-14">
@@ -93,7 +108,9 @@ export default function Landing() {
               Dunzo
             </span>
           </div>
-          <Link to="/login" className="nav-sign-in font-ui">Sign in</Link>
+          <Link to="/login" className="nav-sign-in font-ui">
+            Sign in
+          </Link>
         </div>
       </header>
 
@@ -118,7 +135,8 @@ export default function Landing() {
 
           {/* Subtext */}
           <p className="landing-sub font-ui m-0 text-[clamp(14px,2.5vw,16px)] text-muted max-w-[480px] leading-[1.7] mb-10">
-            A no-nonsense week planner built for people who ship. Track tasks, filter by project, and actually finish your week.
+            A no-nonsense week planner built for people who ship. Track tasks,
+            filter by project, and actually finish your week.
           </p>
 
           {/* CTA */}
@@ -129,7 +147,12 @@ export default function Landing() {
           {/* Feature cards */}
           <div className="hero-cards">
             {features.map((f, i) => (
-              <FeatureCard key={f.title} title={f.title} description={f.description} index={i} />
+              <FeatureCard
+                key={f.title}
+                title={f.title}
+                description={f.description}
+                index={i}
+              />
             ))}
           </div>
         </div>
@@ -140,13 +163,17 @@ export default function Landing() {
         <div className="section-pad px-6 max-w-5xl mx-auto">
           <SectionLabel>How it works</SectionLabel>
           <h2 className="font-display font-extrabold m-0 text-[clamp(28px,4vw,44px)] tracking-[-1.5px] mb-[72px] text-text">
-            Three steps. <br /> One good week. <span className="text-[#C8922A]">Dunzo.</span>
+            Three steps. <br /> One good week.{' '}
+            <span className="text-[#C8922A]">Dunzo.</span>
           </h2>
 
           <div className="steps-timeline">
             {howItWorks.map((item, i) => (
               <div key={item.step} className={`timeline-row timeline-row-${i}`}>
-                <span className="timeline-watermark font-display font-extrabold" aria-hidden>
+                <span
+                  className="timeline-watermark font-display font-extrabold"
+                  aria-hidden
+                >
                   {item.step}
                 </span>
                 <div className="timeline-card timeline-card-inner">
@@ -170,7 +197,8 @@ export default function Landing() {
         <div className="section-pad px-6 max-w-5xl mx-auto">
           <SectionLabel>Why Dunzo</SectionLabel>
           <h2 className="font-display font-extrabold m-0 text-[clamp(28px,4vw,44px)] tracking-[-1.5px] leading-[1.1] text-text mb-12">
-            Built because<br />
+            Built because
+            <br />
             <span className="text-[#C8922A]">the others</span> got in the way.
           </h2>
 
@@ -185,7 +213,11 @@ export default function Landing() {
                 </span>
               </div>
               {versus.map((row, i) => (
-                <div key={i} className="versus-row border-t border-border grid grid-cols-2">
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static data, order never changes
+                  key={i}
+                  className="versus-row border-t border-border grid grid-cols-2"
+                >
                   <div className="py-5 pr-6 border-r border-border">
                     <span className="font-ui versus-them">{row.them}</span>
                   </div>
@@ -211,7 +243,8 @@ export default function Landing() {
             Your week starts now.
           </h2>
           <p className="font-ui m-0 text-[15px] text-muted max-w-[360px] leading-[1.65] mb-9">
-            No setup, no onboarding flow, no paywall. Just open it and get to work.
+            No setup, no onboarding flow, no paywall. Just open it and get to
+            work.
           </p>
           <CtaLink to="/login">Open Dunzo</CtaLink>
         </div>
@@ -229,7 +262,10 @@ export default function Landing() {
           <span className="font-ui text-[12px] text-white/20">
             Built for getting things done.
           </span>
-          <Link to="/login" className="font-ui no-underline text-[12px] text-muted hover:text-text transition-colors duration-150">
+          <Link
+            to="/login"
+            className="font-ui no-underline text-[12px] text-muted hover:text-text transition-colors duration-150"
+          >
             Sign in →
           </Link>
         </div>
@@ -244,18 +280,43 @@ function CtaLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link to={to} className="cta-btn font-ui">
       {children}
-      <svg className="cta-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        aria-hidden="true"
+        className="cta-arrow"
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        fill="none"
+      >
+        <path
+          d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </Link>
   )
 }
 
-function FeatureCard({ title, description, index }: { title: string; description: string; index: number }) {
+function FeatureCard({
+  title,
+  description,
+  index,
+}: {
+  title: string
+  description: string
+  index: number
+}) {
   return (
     <div className={`landing-card-${index} feature-card`}>
-      <h3 className="font-ui m-0 text-[14px] font-semibold text-text mb-2">{title}</h3>
-      <p className="font-ui m-0 text-[13px] text-muted leading-[1.6]">{description}</p>
+      <h3 className="font-ui m-0 text-[14px] font-semibold text-text mb-2">
+        {title}
+      </h3>
+      <p className="font-ui m-0 text-[13px] text-muted leading-[1.6]">
+        {description}
+      </p>
     </div>
   )
 }
@@ -267,51 +328,173 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // A minimal task-card illustration — week view, progress bar, amber checkmark
 function WhyIllustration() {
   const tasks = [
-    { label: 'Send weekly update', done: true,  width: 120 },
-    { label: 'Review PR',          done: true,  width: 72  },
-    { label: 'Write post',         done: false, width: 88  },
-    { label: 'Prep slides',        done: false, width: 80  },
-    { label: 'Ship fix',           done: false, width: 60  },
+    { label: 'Send weekly update', done: true, width: 120 },
+    { label: 'Review PR', done: true, width: 72 },
+    { label: 'Write post', done: false, width: 88 },
+    { label: 'Prep slides', done: false, width: 80 },
+    { label: 'Ship fix', done: false, width: 60 },
   ]
-  const done = tasks.filter(t => t.done).length
+  const done = tasks.filter((t) => t.done).length
   const progress = (done / tasks.length) * 100
 
   return (
     <svg
+      aria-hidden="true"
       viewBox="0 0 280 320"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="w-full max-w-[280px] block"
     >
-      <rect x="12" y="16" width="256" height="288" rx="14" fill="rgba(0,0,0,0.4)" />
-      <rect x="8" y="8" width="256" height="288" rx="14" fill="#181818" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-      <rect x="8.5" y="8.5" width="255" height="14" rx="13.5" fill="rgba(255,255,255,0.03)" />
+      <rect
+        x="12"
+        y="16"
+        width="256"
+        height="288"
+        rx="14"
+        fill="rgba(0,0,0,0.4)"
+      />
+      <rect
+        x="8"
+        y="8"
+        width="256"
+        height="288"
+        rx="14"
+        fill="#181818"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="1"
+      />
+      <rect
+        x="8.5"
+        y="8.5"
+        width="255"
+        height="14"
+        rx="13.5"
+        fill="rgba(255,255,255,0.03)"
+      />
       <rect x="8" y="8" width="256" height="44" rx="14" fill="#1E1E1E" />
       <rect x="8" y="30" width="256" height="22" fill="#1E1E1E" />
       <rect x="8" y="51" width="256" height="1" fill="rgba(255,255,255,0.07)" />
 
-      {['M','T','W','T','F'].map((d, i) => (
+      {['M', 'T', 'W', 'T', 'F'].map((d, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static SVG illustration
         <g key={i}>
-          <rect x={24 + i * 46} y="16" width="36" height="22" rx="6" fill={i === 2 ? '#C8922A' : 'rgba(255,255,255,0.05)'} />
-          <text x={42 + i * 46} y="31" textAnchor="middle" fontFamily="Geist, sans-serif" fontSize="10" fontWeight="600" fill={i === 2 ? '#0C0C0C' : 'rgba(255,255,255,0.35)'}>{d}</text>
+          <rect
+            x={24 + i * 46}
+            y="16"
+            width="36"
+            height="22"
+            rx="6"
+            fill={i === 2 ? '#C8922A' : 'rgba(255,255,255,0.05)'}
+          />
+          <text
+            x={42 + i * 46}
+            y="31"
+            textAnchor="middle"
+            fontFamily="Geist, sans-serif"
+            fontSize="10"
+            fontWeight="600"
+            fill={i === 2 ? '#0C0C0C' : 'rgba(255,255,255,0.35)'}
+          >
+            {d}
+          </text>
         </g>
       ))}
 
-      <text x="24" y="74" fontFamily="Geist, sans-serif" fontSize="9" fontWeight="600" fill="rgba(255,255,255,0.3)" letterSpacing="0.08em">WEDNESDAY</text>
-      <text x="240" y="74" textAnchor="end" fontFamily="Geist, sans-serif" fontSize="9" fontWeight="600" fill="#C8922A">{done}/{tasks.length}</text>
+      <text
+        x="24"
+        y="74"
+        fontFamily="Geist, sans-serif"
+        fontSize="9"
+        fontWeight="600"
+        fill="rgba(255,255,255,0.3)"
+        letterSpacing="0.08em"
+      >
+        WEDNESDAY
+      </text>
+      <text
+        x="240"
+        y="74"
+        textAnchor="end"
+        fontFamily="Geist, sans-serif"
+        fontSize="9"
+        fontWeight="600"
+        fill="#C8922A"
+      >
+        {done}/{tasks.length}
+      </text>
 
-      <rect x="24" y="80" width="232" height="3" rx="1.5" fill="rgba(255,255,255,0.06)" />
-      <rect x="24" y="80" width={232 * progress / 100} height="3" rx="1.5" fill="#C8922A" opacity="0.8" />
+      <rect
+        x="24"
+        y="80"
+        width="232"
+        height="3"
+        rx="1.5"
+        fill="rgba(255,255,255,0.06)"
+      />
+      <rect
+        x="24"
+        y="80"
+        width={(232 * progress) / 100}
+        height="3"
+        rx="1.5"
+        fill="#C8922A"
+        opacity="0.8"
+      />
 
       {tasks.map((task, i) => {
         const y = 102 + i * 40
         return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static SVG illustration
           <g key={i}>
-            {task.done && <rect x="16" y={y - 4} width="248" height="32" rx="8" fill="rgba(200,146,42,0.04)" />}
-            <rect x="24" y={y} width="18" height="18" rx="5" fill={task.done ? '#C8922A' : 'transparent'} stroke={task.done ? '#C8922A' : 'rgba(255,255,255,0.15)'} strokeWidth="1.2" />
-            {task.done && <path d={`M${28} ${y + 9}l4 4 6.5-8`} stroke="#0C0C0C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />}
-            <rect x="52" y={y + 4} width={task.width} height="9" rx="4" fill={task.done ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.2)'} />
-            {i < tasks.length - 1 && <line x1="24" y1={y + 30} x2="256" y2={y + 30} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />}
+            {task.done && (
+              <rect
+                x="16"
+                y={y - 4}
+                width="248"
+                height="32"
+                rx="8"
+                fill="rgba(200,146,42,0.04)"
+              />
+            )}
+            <rect
+              x="24"
+              y={y}
+              width="18"
+              height="18"
+              rx="5"
+              fill={task.done ? '#C8922A' : 'transparent'}
+              stroke={task.done ? '#C8922A' : 'rgba(255,255,255,0.15)'}
+              strokeWidth="1.2"
+            />
+            {task.done && (
+              <path
+                d={`M${28} ${y + 9}l4 4 6.5-8`}
+                stroke="#0C0C0C"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+            <rect
+              x="52"
+              y={y + 4}
+              width={task.width}
+              height="9"
+              rx="4"
+              fill={
+                task.done ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.2)'
+              }
+            />
+            {i < tasks.length - 1 && (
+              <line
+                x1="24"
+                y1={y + 30}
+                x2="256"
+                y2={y + 30}
+                stroke="rgba(255,255,255,0.05)"
+                strokeWidth="1"
+              />
+            )}
           </g>
         )
       })}
@@ -322,7 +505,14 @@ function WhyIllustration() {
           <stop offset="100%" stopColor="#C8922A" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <rect x="8" y="8" width="256" height="288" rx="14" fill="url(#cardGlow)" />
+      <rect
+        x="8"
+        y="8"
+        width="256"
+        height="288"
+        rx="14"
+        fill="url(#cardGlow)"
+      />
     </svg>
   )
 }

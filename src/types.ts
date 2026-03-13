@@ -19,6 +19,6 @@ export interface CheckedState {
 }
 
 export interface CustomTag {
-  name: string  // used as the tag id
+  name: string // used as the tag id
   color: string // hex color chosen by user
 }

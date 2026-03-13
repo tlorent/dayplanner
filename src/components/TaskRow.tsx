@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
-import type { Task } from '../types'
-import { useWeekStore, selectIsChecked } from '../store/useWeekStore'
-import { TagChip } from './TagChip'
-import { TAG_COLORS } from '../data/tasks'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useEffect, useRef, useState } from 'react'
+import { TAG_COLORS } from '../data/tasks'
+import { selectIsChecked, useWeekStore } from '../store/useWeekStore'
+import type { Task } from '../types'
 import { AddTaskModal } from './AddTaskModal'
+import { TagChip } from './TagChip'
 
 interface Props {
   task: Task
@@ -23,9 +23,18 @@ export function TaskRow({ task, sortable }: Props) {
   // Only apply entry animation on first mount
   const mounted = useRef(false)
   const animateIn = !mounted.current
-  useEffect(() => { mounted.current = true }, [])
+  useEffect(() => {
+    mounted.current = true
+  }, [])
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: task.id,
     disabled: !sortable,
   })
@@ -53,15 +62,16 @@ export function TaskRow({ task, sortable }: Props) {
 
   return (
     <>
-      <div
+      <button
         ref={setNodeRef}
+        type="button"
         style={{
           transform: CSS.Transform.toString(transform),
           transition,
           opacity: isDragging ? 0.4 : 1,
         }}
         className={[
-          'task-row group flex items-center gap-2.5 px-3.5 py-2.5 border-b border-white/4 cursor-pointer transition-colors duration-150 hover:bg-hover',
+          'task-row group flex items-center gap-2.5 px-3.5 py-2.5 border-b border-white/4 w-full text-left cursor-pointer transition-colors duration-150 hover:bg-hover',
           animateIn ? 'task-animate-in' : '',
           flashing ? 'green-flash' : '',
         ].join(' ')}
@@ -72,11 +82,13 @@ export function TaskRow({ task, sortable }: Props) {
       >
         {/* Drag handle */}
         {sortable && (
+          // biome-ignore lint/a11y/noStaticElementInteractions: dnd-kit spreads role/keyboard handlers via {...attributes} {...listeners}
           <span
             {...attributes}
             {...listeners}
             className="text-white/30 text-[11px] cursor-grab active:cursor-grabbing shrink-0 select-none"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             ⠿
           </span>
@@ -88,20 +100,38 @@ export function TaskRow({ task, sortable }: Props) {
             'flex items-center justify-center shrink-0 w-4 h-4 rounded-sm transition-all duration-150',
             popping ? 'check-pop' : '',
           ].join(' ')}
-          style={isChecked
-            ? { background: '#C8922A', border: '1px solid #C8922A' }
-            : { background: 'transparent', border: '1px solid rgba(255,255,255,0.20)' }
+          style={
+            isChecked
+              ? { background: '#C8922A', border: '1px solid #C8922A' }
+              : {
+                  background: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.20)',
+                }
           }
         >
           {isChecked && (
-            <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-              <path d="M1 3.5L3.5 6L8 1" stroke="#0C0C0C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              aria-hidden="true"
+              width="9"
+              height="7"
+              viewBox="0 0 9 7"
+              fill="none"
+            >
+              <path
+                d="M1 3.5L3.5 6L8 1"
+                stroke="#0C0C0C"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           )}
         </div>
 
         {/* Label */}
-        <span className={`flex-1 text-[13.5px] transition-colors duration-200 ${isChecked ? 'text-white/40 line-through' : 'text-white/82'}`}>
+        <span
+          className={`flex-1 text-[13.5px] transition-colors duration-200 ${isChecked ? 'text-white/40 line-through' : 'text-white/82'}`}
+        >
           {task.label}
         </span>
 
@@ -117,6 +147,7 @@ export function TaskRow({ task, sortable }: Props) {
         {/* Edit / Hide button — zero width when hidden (no horizontal space), full width on hover */}
         <div className="overflow-hidden w-0 group-hover:w-10 group-hover:ml-1 transition-[width,margin] duration-150 shrink-0">
           <button
+            type="button"
             onClick={handleActionClick}
             className="whitespace-nowrap text-white/60 text-[11px] px-1.5 py-0.5 rounded border border-white/20 bg-transparent cursor-pointer pointer-events-none group-hover:pointer-events-auto"
             title={isCustom ? 'Taak bewerken' : 'Taak verbergen'}
@@ -125,7 +156,7 @@ export function TaskRow({ task, sortable }: Props) {
             {isCustom ? '✏' : '✕'}
           </button>
         </div>
-      </div>
+      </button>
 
       {editOpen && isCustom && (
         <AddTaskModal editTask={task} onClose={() => setEditOpen(false)} />

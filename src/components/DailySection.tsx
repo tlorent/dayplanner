@@ -1,6 +1,10 @@
-import type { Tag, Task } from '../types'
-import { useWeekStore, selectDailyTasks, selectGroupProgress } from '../store/useWeekStore'
 import { TAG_COLORS } from '../data/tasks'
+import {
+  selectDailyTasks,
+  selectGroupProgress,
+  useWeekStore,
+} from '../store/useWeekStore'
+import type { Tag, Task } from '../types'
 import { TaskRow } from './TaskRow'
 
 function groupByTag(tasks: Task[]): Record<string, Task[]> {
@@ -26,7 +30,11 @@ export function DailySection() {
   const tagKeys = (Object.keys(groups) as Tag[]).sort()
 
   if (tasks.length === 0) {
-    return <p className="text-muted text-[13px] py-3">No daily tasks for this tag.</p>
+    return (
+      <p className="text-muted text-[13px] py-3">
+        No daily tasks for this tag.
+      </p>
+    )
   }
 
   return (
@@ -36,7 +44,10 @@ export function DailySection() {
         const groupKey = `daily-${tag}`
         const collapsed = collapsedGroups[groupKey] !== false
         const [color] = TAG_COLORS[tag] ?? ['rgba(255,255,255,0.4)']
-        const gp = selectGroupProgress(checked, groupTasks.map((t) => t.id))
+        const gp = selectGroupProgress(
+          checked,
+          groupTasks.map((t) => t.id),
+        )
 
         return (
           <div
@@ -46,10 +57,14 @@ export function DailySection() {
           >
             {/* Tag label — triggers collapse */}
             <button
+              type="button"
               onClick={() => toggleGroup(groupKey)}
               className="flex items-center gap-2 mb-1.5 border-none bg-transparent cursor-pointer p-0"
             >
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: color }}
+              />
               <span className="text-[10px] font-semibold tracking-widest uppercase text-white/50">
                 {tag}
               </span>

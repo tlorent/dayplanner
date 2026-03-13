@@ -1,8 +1,7 @@
-import type { DisabledBuiltin } from '../store/useWeekStore'
+import { DAILY_TASKS, DAY_TASKS, DAYS, TAG_COLORS } from '../data/tasks'
 import { useWeekStore } from '../store/useWeekStore'
-import { DAILY_TASKS, DAY_TASKS, DAYS } from '../data/tasks'
+import type { Task } from '../types'
 import { TagChip } from './TagChip'
-import { TAG_COLORS } from '../data/tasks'
 
 const ALL_BUILTINS = [...DAILY_TASKS, ...DAY_TASKS]
 
@@ -26,17 +25,22 @@ export function RestoreTasksModal({ onClose }: Props) {
 
   const entries = disabledBuiltins
     .map((d) => ({ ...d, task: ALL_BUILTINS.find((t) => t.id === d.id) }))
-    .filter((e) => e.task != null)
+    .filter((e): e is typeof e & { task: Task } => e.task != null)
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: backdrop click-to-close pattern
     <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-1000 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
     >
       <div className="bg-elevated border border-border rounded-xl p-6 w-[480px] max-w-[92vw] flex flex-col gap-5">
         <div className="flex items-center justify-between">
-          <h3 className="m-0 text-[15px] font-semibold text-text">Deleted tasks</h3>
+          <h3 className="m-0 text-[15px] font-semibold text-text">
+            Deleted tasks
+          </h3>
           <button
+            type="button"
             onClick={onClose}
             className="text-white/40 hover:text-white/70 bg-transparent border-none cursor-pointer text-[18px] leading-none"
           >
@@ -53,25 +57,35 @@ export function RestoreTasksModal({ onClose }: Props) {
         ) : (
           <div className="flex flex-col gap-1.5">
             {entries.map(({ id, disabledAt, task }) => {
-              const dayLabel = task!.dayIndex !== undefined ? DAYS[task!.dayIndex].label : 'Daily'
+              const dayLabel =
+                task.dayIndex !== undefined
+                  ? DAYS[task.dayIndex].label
+                  : 'Daily'
               return (
                 <div
                   key={id}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-card border border-border"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="m-0 text-[13px] text-white/80 font-ui truncate">{task!.label}</p>
+                    <p className="m-0 text-[13px] text-white/80 font-ui truncate">
+                      {task.label}
+                    </p>
                     <p className="m-0 text-[11px] text-white/30 font-ui mt-0.5">
                       {dayLabel} · {timeLeft(disabledAt)}
                     </p>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    {task!.tags.map((tag) => {
-                      const [color] = TAG_COLORS[tag] ?? ['rgba(255,255,255,0.4)']
-                      return <TagChip key={tag} tag={tag} color={color} size="xs" />
+                    {task.tags.map((tag) => {
+                      const [color] = TAG_COLORS[tag] ?? [
+                        'rgba(255,255,255,0.4)',
+                      ]
+                      return (
+                        <TagChip key={tag} tag={tag} color={color} size="xs" />
+                      )
                     })}
                   </div>
                   <button
+                    type="button"
                     onClick={() => enableBuiltin(id)}
                     className="shrink-0 px-2.5 py-1 rounded-md border border-white/15 bg-transparent text-white/50 hover:text-white/80 hover:border-white/30 font-ui text-[11px] cursor-pointer transition-colors"
                   >
@@ -85,7 +99,11 @@ export function RestoreTasksModal({ onClose }: Props) {
 
         {entries.length > 1 && (
           <button
-            onClick={() => { enableAllBuiltins(); onClose() }}
+            type="button"
+            onClick={() => {
+              enableAllBuiltins()
+              onClose()
+            }}
             className="self-end px-4 py-1.5 rounded-md border border-white/15 bg-transparent text-white/50 hover:text-white/80 font-ui text-[12px] cursor-pointer transition-colors"
           >
             Recover all

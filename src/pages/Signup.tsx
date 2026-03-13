@@ -1,6 +1,6 @@
+import { useStackApp } from '@stackframe/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useStackApp } from '@stackframe/react'
 import { Logo } from '../components/Logo'
 
 export default function Signup() {
@@ -20,7 +20,11 @@ export default function Signup() {
     }
     setLoading(true)
     setError('')
-    const result = await app.signUpWithCredential({ email, password, noVerificationCallback: true })
+    const result = await app.signUpWithCredential({
+      email,
+      password,
+      noVerificationCallback: true,
+    })
     setLoading(false)
     if (result.status === 'error') {
       const msg = result.error.message ?? ''
@@ -40,9 +44,15 @@ export default function Signup() {
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-10 text-center">
-          <Link to="/" className="inline-flex items-center justify-center gap-3 mb-2 no-underline">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center gap-3 mb-2 no-underline"
+          >
             <Logo size={36} />
-            <h1 className="font-display font-extrabold text-4xl text-white/90 m-0" style={{ letterSpacing: '-1px' }}>
+            <h1
+              className="font-display font-extrabold text-4xl text-white/90 m-0"
+              style={{ letterSpacing: '-1px' }}
+            >
               Dunzo
             </h1>
           </Link>
@@ -55,14 +65,21 @@ export default function Signup() {
           style={{ border: '1px solid rgba(255,255,255,0.07)' }}
         >
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold tracking-wide text-white/50 uppercase">
+            <label
+              htmlFor="signup-email"
+              className="text-[12px] font-semibold tracking-wide text-white/50 uppercase"
+            >
               Email
             </label>
             <input
+              id="signup-email"
               type="email"
               autoComplete="email"
               value={email}
-              onChange={e => { setEmail(e.target.value); setError('') }}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setError('')
+              }}
               className="bg-card rounded-lg px-3.5 py-2.5 text-[14px] text-white/90 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-white/15"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}
               placeholder="you@example.com"
@@ -71,14 +88,21 @@ export default function Signup() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold tracking-wide text-white/50 uppercase">
+            <label
+              htmlFor="signup-password"
+              className="text-[12px] font-semibold tracking-wide text-white/50 uppercase"
+            >
               Password
             </label>
             <input
+              id="signup-password"
               type="password"
               autoComplete="new-password"
               value={password}
-              onChange={e => { setPassword(e.target.value); setError('') }}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setError('')
+              }}
               className="bg-card rounded-lg px-3.5 py-2.5 text-[14px] text-white/90 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-white/15"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}
               placeholder="••••••••"
@@ -87,14 +111,21 @@ export default function Signup() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[12px] font-semibold tracking-wide text-white/50 uppercase">
+            <label
+              htmlFor="signup-confirm"
+              className="text-[12px] font-semibold tracking-wide text-white/50 uppercase"
+            >
               Confirm password
             </label>
             <input
+              id="signup-confirm"
               type="password"
               autoComplete="new-password"
               value={confirm}
-              onChange={e => { setConfirm(e.target.value); setError('') }}
+              onChange={(e) => {
+                setConfirm(e.target.value)
+                setError('')
+              }}
               className="bg-card rounded-lg px-3.5 py-2.5 text-[14px] text-white/90 outline-none placeholder:text-white/20 focus:ring-1 focus:ring-white/15"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}
               placeholder="••••••••"
@@ -102,9 +133,7 @@ export default function Signup() {
             />
           </div>
 
-          {error && (
-            <p className="text-[13px] text-red-400/80 m-0">{error}</p>
-          )}
+          {error && <p className="text-[13px] text-red-400/80 m-0">{error}</p>}
 
           <button
             type="submit"
@@ -116,7 +145,10 @@ export default function Signup() {
 
           <p className="text-center text-[13px] text-white/40 m-0">
             Already have an account?{' '}
-            <Link to="/login" className="text-white/70 hover:text-white/90 transition-colors duration-150 no-underline">
+            <Link
+              to="/login"
+              className="text-white/70 hover:text-white/90 transition-colors duration-150 no-underline"
+            >
               Sign in
             </Link>
           </p>
