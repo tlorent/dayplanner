@@ -7,10 +7,11 @@ import {
 import type { Tag, Task } from '../types'
 import { TaskRow } from './TaskRow'
 
-function groupByTag(tasks: Task[]): Record<string, Task[]> {
+function groupByTag(tasks: Task[], filterTag: Tag | null): Record<string, Task[]> {
   const groups: Record<string, Task[]> = {}
   for (const task of tasks) {
-    for (const key of task.tags) {
+    const keys = filterTag ? [filterTag] : task.tags
+    for (const key of keys) {
       if (!groups[key]) groups[key] = []
       groups[key].push(task)
     }
@@ -27,7 +28,7 @@ export function DailySection() {
   const toggleGroup = useWeekStore((s) => s.toggleGroup)
   const collapsedGroups = useWeekStore((s) => s.collapsedGroups)
 
-  const groups = groupByTag(tasks)
+  const groups = groupByTag(tasks, activeTag)
   const tagKeys = (Object.keys(groups) as Tag[]).sort()
 
   if (tasks.length === 0) {
