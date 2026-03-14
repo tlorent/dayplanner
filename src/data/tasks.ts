@@ -34,7 +34,11 @@ export const DAYS: { label: string; short: string }[] = [
 // Daily recurring tasks (appear every day)
 export const DAILY_TASKS: Task[] = [
   { id: 'd1', label: 'HYF les-segment schrijven', tags: ['hyf'] },
-  { id: 'd2', label: 'Frontend Masters video: Practical Prompt Engineering', tags: ['leren'] },
+  {
+    id: 'd2',
+    label: 'Frontend Masters video: Practical Prompt Engineering',
+    tags: ['leren'],
+  },
   {
     id: 'd3',
     label: '5 LinkedIn posts liken/reageren',
@@ -46,6 +50,7 @@ export const DAILY_TASKS: Task[] = [
     tags: ['linkedin', 'bc'],
   },
   { id: 'd5', label: 'Pipeline actie uitvoeren', tags: ['bc'] },
+  { id: 'd16', label: "5 nieuwe ICP's toevoegen aan pipeline", tags: ['bc'] },
   {
     id: 'd6',
     label: '5 comments op boekaccounts',
@@ -81,7 +86,7 @@ export const DAILY_TASKS: Task[] = [
     label: '1 post publiceren of voorbereiden',
     tags: ['sudo', 'instagram'],
   },
-  { id: 'd14', label: 'Dunzo minimaal 1 uur bouwen', tags: ['dunzo'] },
+  { id: 'd14', label: 'Dunzo: 1 uur bouwen', tags: ['dunzo'] },
   {
     id: 'd15',
     label: 'Noteer wat je bouwde (input voor vrijdagpost)',
@@ -105,25 +110,13 @@ export const DAY_TASKS: Task[] = [
     dayIndex: 0,
   },
   {
-    id: 'ma3',
-    label: "5 nieuwe ICP's toevoegen aan pipeline",
-    tags: ['bc'],
-    dayIndex: 0,
-  },
-  {
     id: 'ma4',
     label: 'Schrijf dev.to artikel',
     tags: ['bc'],
     dayIndex: 0,
   },
-
   // Dinsdag — Bouwen
-  {
-    id: 'di1',
-    label: 'Dunzo deep work: 2 uur',
-    tags: ['dunzo'],
-    dayIndex: 1,
-  },
+  // (Dunzo zit nu in daily tasks)
 
   // Woensdag — Outreach + content
   {
@@ -144,21 +137,13 @@ export const DAY_TASKS: Task[] = [
     tags: ['bc'],
     dayIndex: 2,
   },
-
-  // Donderdag — Bouwen + BC
-  {
-    id: 'do1',
-    label: 'Dunzo deep work: 2 uur',
-    tags: ['dunzo'],
-    dayIndex: 3,
-  },
+  // Donderdag — BC outreach
   {
     id: 'do2',
     label: 'BC: 5 outreach mails naar leads',
     tags: ['bc'],
     dayIndex: 3,
   },
-
   // Vrijdag — Content + review
   {
     id: 'vr1',
@@ -180,12 +165,6 @@ export const DAY_TASKS: Task[] = [
   },
   {
     id: 'vr4',
-    label: 'Weekreview: wat werkte, wat schuift',
-    tags: ['bc', 'dunzo'],
-    dayIndex: 4,
-  },
-  {
-    id: 'vr5',
     label: 'Schrijf dev.to artikel',
     tags: ['bc'],
     dayIndex: 4,

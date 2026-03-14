@@ -10,9 +10,10 @@ import { TaskRow } from './TaskRow'
 function groupByTag(tasks: Task[]): Record<string, Task[]> {
   const groups: Record<string, Task[]> = {}
   for (const task of tasks) {
-    const key = task.tags[0]
-    if (!groups[key]) groups[key] = []
-    groups[key].push(task)
+    for (const key of task.tags) {
+      if (!groups[key]) groups[key] = []
+      groups[key].push(task)
+    }
   }
   return groups
 }
