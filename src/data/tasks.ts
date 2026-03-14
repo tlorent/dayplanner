@@ -2,7 +2,7 @@ import type { Task } from '../types'
 
 export const TAGS = [
   'bc',
-  'pingpilot',
+  'dunzo',
   'hyf',
   'leeskring',
   'sudo',
@@ -14,7 +14,7 @@ export const TAGS = [
 // Per-tag accent colors: [text, background, border]
 export const TAG_COLORS: Record<string, [string, string, string]> = {
   bc: ['#6B9FD4', '#0F1A2E', '#1E3A5F'],
-  pingpilot: ['#AAAAAA', '#1A1A1A', '#3A3A3A'],
+  dunzo: ['#AAAAAA', '#1A1A1A', '#3A3A3A'],
   hyf: ['#C8922A', '#1E1608', '#4A3510'],
   leeskring: ['#A07BC8', '#160F1E', '#3A1F5A'],
   sudo: ['#6BAF6B', '#0A1A0A', '#1A3D1A'],
@@ -34,7 +34,7 @@ export const DAYS: { label: string; short: string }[] = [
 // Daily recurring tasks (appear every day)
 export const DAILY_TASKS: Task[] = [
   { id: 'd1', label: 'HYF les-segment schrijven', tags: ['hyf'] },
-  { id: 'd2', label: 'Frontend Masters video', tags: ['leren'] },
+  { id: 'd2', label: 'Frontend Masters video: Practical Prompt Engineering', tags: ['leren'] },
   {
     id: 'd3',
     label: '5 LinkedIn posts liken/reageren',
@@ -81,11 +81,11 @@ export const DAILY_TASKS: Task[] = [
     label: '1 post publiceren of voorbereiden',
     tags: ['sudo', 'instagram'],
   },
-  { id: 'd14', label: 'PingPilot minimaal 1 uur bouwen', tags: ['pingpilot'] },
+  { id: 'd14', label: 'Dunzo minimaal 1 uur bouwen', tags: ['dunzo'] },
   {
     id: 'd15',
     label: 'Noteer wat je bouwde (input voor vrijdagpost)',
-    tags: ['pingpilot'],
+    tags: ['dunzo'],
   },
 ]
 
@@ -110,12 +110,18 @@ export const DAY_TASKS: Task[] = [
     tags: ['bc'],
     dayIndex: 0,
   },
+  {
+    id: 'ma4',
+    label: 'Schrijf dev.to artikel',
+    tags: ['bc'],
+    dayIndex: 0,
+  },
 
   // Dinsdag — Bouwen
   {
     id: 'di1',
-    label: 'PingPilot deep work: 2 uur',
-    tags: ['pingpilot'],
+    label: 'Dunzo deep work: 2 uur',
+    tags: ['dunzo'],
     dayIndex: 1,
   },
 
@@ -132,12 +138,18 @@ export const DAY_TASKS: Task[] = [
     tags: ['sudo', 'linkedin'],
     dayIndex: 2,
   },
+  {
+    id: 'wo3',
+    label: 'Schrijf dev.to artikel',
+    tags: ['bc'],
+    dayIndex: 2,
+  },
 
   // Donderdag — Bouwen + BC
   {
     id: 'do1',
-    label: 'PingPilot deep work: 2 uur',
-    tags: ['pingpilot'],
+    label: 'Dunzo deep work: 2 uur',
+    tags: ['dunzo'],
     dayIndex: 3,
   },
   {
@@ -162,14 +174,20 @@ export const DAY_TASKS: Task[] = [
   },
   {
     id: 'vr3',
-    label: 'PingPilot building-in-public post',
-    tags: ['pingpilot', 'linkedin'],
+    label: 'Dunzo building-in-public post',
+    tags: ['dunzo', 'linkedin'],
     dayIndex: 4,
   },
   {
     id: 'vr4',
     label: 'Weekreview: wat werkte, wat schuift',
-    tags: ['bc', 'pingpilot'],
+    tags: ['bc', 'dunzo'],
+    dayIndex: 4,
+  },
+  {
+    id: 'vr5',
+    label: 'Schrijf dev.to artikel',
+    tags: ['bc'],
     dayIndex: 4,
   },
 ]
