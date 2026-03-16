@@ -97,11 +97,18 @@ export function selectDailyTasks(
   return all
 }
 
+// Daily tasks are checked per-day, so we use a composite key: taskId:dayIndex
+export function dailyCheckedKey(taskId: string, day: DayIndex): string {
+  return `${taskId}:${day}`
+}
+
 export function selectIsChecked(
   checked: CheckedState,
   taskId: string,
+  day?: DayIndex, // required for daily tasks, omit for day-specific
 ): boolean {
-  return checked[getWeekKey()]?.[taskId] ?? false
+  const key = day !== undefined ? dailyCheckedKey(taskId, day) : taskId
+  return checked[getWeekKey()]?.[key] ?? false
 }
 
 export function selectProgress(
@@ -111,13 +118,12 @@ export function selectProgress(
   day: DayIndex,
   disabledBuiltins?: DisabledBuiltin[],
 ): { done: number; total: number } {
-  const all = [
-    ...selectDayTasks(customTasks, activeTag, day, undefined, disabledBuiltins),
-    ...selectDailyTasks(customTasks, activeTag, disabledBuiltins),
-  ]
   const weekChecked = checked[getWeekKey()] ?? {}
-  const done = all.filter((t) => weekChecked[t.id]).length
-  return { done, total: all.length }
+  const dayTasks = selectDayTasks(customTasks, activeTag, day, undefined, disabledBuiltins)
+  const dailyTasks = selectDailyTasks(customTasks, activeTag, disabledBuiltins)
+  const doneDayTasks = dayTasks.filter((t) => weekChecked[t.id]).length
+  const doneDailyTasks = dailyTasks.filter((t) => weekChecked[dailyCheckedKey(t.id, day)]).length
+  return { done: doneDayTasks + doneDailyTasks, total: dayTasks.length + dailyTasks.length }
 }
 
 // Progress for a day ignoring tag filter — used in sidebar day buttons
@@ -127,22 +133,22 @@ export function selectDayProgress(
   day: DayIndex,
   disabledBuiltins?: DisabledBuiltin[],
 ): { done: number; total: number } {
-  const all = [
-    ...selectDayTasks(customTasks, null, day, undefined, disabledBuiltins),
-    ...selectDailyTasks(customTasks, null, disabledBuiltins),
-  ]
   const weekChecked = checked[getWeekKey()] ?? {}
-  const done = all.filter((t) => weekChecked[t.id]).length
-  return { done, total: all.length }
+  const dayTasks = selectDayTasks(customTasks, null, day, undefined, disabledBuiltins)
+  const dailyTasks = selectDailyTasks(customTasks, null, disabledBuiltins)
+  const doneDayTasks = dayTasks.filter((t) => weekChecked[t.id]).length
+  const doneDailyTasks = dailyTasks.filter((t) => weekChecked[dailyCheckedKey(t.id, day)]).length
+  return { done: doneDayTasks + doneDailyTasks, total: dayTasks.length + dailyTasks.length }
 }
 
-// Progress for a specific task id list — used in daily group headers
+// Progress for a specific daily task id list — used in daily group headers
 export function selectGroupProgress(
   checked: CheckedState,
   taskIds: string[],
+  day: DayIndex,
 ): { done: number; total: number } {
   const weekChecked = checked[getWeekKey()] ?? {}
-  const done = taskIds.filter((id) => weekChecked[id]).length
+  const done = taskIds.filter((id) => weekChecked[dailyCheckedKey(id, day)]).length
   return { done, total: taskIds.length }
 }
 
@@ -167,7 +173,7 @@ interface WeekStore {
   setActiveDay: (day: DayIndex) => void
   setActiveView: (view: 'week' | 'all') => void
   setActiveTag: (tag: Tag | null) => void
-  toggleTask: (taskId: string) => void
+  toggleTask: (taskId: string, day?: DayIndex) => void
   resetDay: () => void
   addTask: (task: Task) => void
   updateTask: (id: string, patch: Partial<Task>) => void
@@ -204,14 +210,15 @@ export const useWeekStore = create<WeekStore>()(
       setActiveView: (view) => set({ activeView: view }),
       setActiveTag: (tag) => set({ activeTag: tag }),
 
-      toggleTask: (taskId) => {
+      toggleTask: (taskId, day) => {
         const weekKey = getWeekKey()
         const { checked } = get()
         const weekChecked = checked[weekKey] ?? {}
+        const key = day !== undefined ? dailyCheckedKey(taskId, day) : taskId
         set({
           checked: {
             ...checked,
-            [weekKey]: { ...weekChecked, [taskId]: !weekChecked[taskId] },
+            [weekKey]: { ...weekChecked, [key]: !weekChecked[key] },
           },
         })
       },
@@ -220,19 +227,12 @@ export const useWeekStore = create<WeekStore>()(
         const { activeDay, checked, customTasks, disabledBuiltins } = get()
         const weekKey = getWeekKey()
         const weekChecked = { ...(checked[weekKey] ?? {}) }
-        const allTasks = [
-          ...selectDayTasks(
-            customTasks,
-            null,
-            activeDay,
-            undefined,
-            disabledBuiltins,
-          ),
-          ...selectDailyTasks(customTasks, null, disabledBuiltins),
-        ]
-        allTasks.forEach((t) => {
+        for (const t of selectDayTasks(customTasks, null, activeDay, undefined, disabledBuiltins)) {
           weekChecked[t.id] = false
-        })
+        }
+        for (const t of selectDailyTasks(customTasks, null, disabledBuiltins)) {
+          weekChecked[dailyCheckedKey(t.id, activeDay)] = false
+        }
         set({ checked: { ...checked, [weekKey]: weekChecked } })
       },
 

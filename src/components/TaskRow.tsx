@@ -16,7 +16,12 @@ interface Props {
 export function TaskRow({ task, sortable }: Props) {
   const toggleTask = useWeekStore((s) => s.toggleTask)
   const disableBuiltin = useWeekStore((s) => s.disableBuiltin)
-  const isChecked = useWeekStore((s) => selectIsChecked(s.checked, task.id))
+  // Daily tasks (no dayIndex) are checked per-day; day-specific tasks use plain id
+  const isDaily = task.dayIndex === undefined && !task.backlog
+  const activeDay = useWeekStore((s) => s.activeDay)
+  const isChecked = useWeekStore((s) =>
+    selectIsChecked(s.checked, task.id, isDaily ? s.activeDay : undefined),
+  )
   const [popping, setPopping] = useState(false)
   const [flashing, setFlashing] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -80,7 +85,7 @@ export function TaskRow({ task, sortable }: Props) {
             animateIn ? 'task-animate-in' : '',
             flashing ? 'green-flash' : '',
           ].join(' ')}
-          onClick={() => toggleTask(task.id)}
+          onClick={() => toggleTask(task.id, isDaily ? activeDay : undefined)}
           onAnimationEnd={(e) => {
             if (e.animationName === 'greenFlash') setFlashing(false)
           }}

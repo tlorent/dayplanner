@@ -21,6 +21,7 @@ function groupByTag(tasks: Task[], filterTag: Tag | null): Record<string, Task[]
 
 export function DailySection() {
   const activeTag = useWeekStore((s) => s.activeTag)
+  const activeDay = useWeekStore((s) => s.activeDay)
   const customTasks = useWeekStore((s) => s.customTasks)
   const checked = useWeekStore((s) => s.checked)
   const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
@@ -49,6 +50,7 @@ export function DailySection() {
         const gp = selectGroupProgress(
           checked,
           groupTasks.map((t) => t.id),
+          activeDay,
         )
 
         return (
