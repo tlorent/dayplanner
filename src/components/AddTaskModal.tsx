@@ -10,8 +10,8 @@ import { TagChip } from './TagChip'
 
 const schema = z.object({
   label: z.string().min(1, 'Add a task description.'),
-  tags: z.array(z.string()).min(1, 'Select at least one task.'),
-  type: z.enum(['daily', 'recurring', 'oneoff']),
+  tags: z.array(z.string()).min(1, 'Select at least one tag.'),
+  type: z.enum(['backlog', 'daily', 'recurring', 'oneoff']),
   dayIndex: z.number().min(0).max(4),
 })
 
@@ -23,8 +23,9 @@ interface Props {
 }
 
 function taskToFormValues(task: Task, activeDay: DayIndex): FormValues {
-  let type: 'daily' | 'recurring' | 'oneoff' = 'recurring'
-  if (task.dayIndex === undefined) type = 'daily'
+  let type: 'backlog' | 'daily' | 'recurring' | 'oneoff' = 'recurring'
+  if (task.backlog) type = 'backlog'
+  else if (task.dayIndex === undefined) type = 'daily'
   else if (task.oneOff) type = 'oneoff'
   return {
     label: task.label,
@@ -58,7 +59,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     resolver: zodResolver(schema),
     defaultValues: editTask
       ? taskToFormValues(editTask, activeDay)
-      : { label: '', tags: [], type: 'recurring', dayIndex: activeDay },
+      : { label: '', tags: [], type: 'backlog', dayIndex: activeDay },
   })
 
   const type = watch('type')
@@ -67,7 +68,11 @@ export function AddTaskModal({ onClose, editTask }: Props) {
     const patch: Partial<Task> = {
       label: data.label,
       tags: data.tags as Tag[],
-      dayIndex: data.type !== 'daily' ? (data.dayIndex as DayIndex) : undefined,
+      backlog: data.type === 'backlog',
+      dayIndex:
+        data.type !== 'daily' && data.type !== 'backlog'
+          ? (data.dayIndex as DayIndex)
+          : undefined,
       oneOff: data.type === 'oneoff',
       createdWeekKey: data.type === 'oneoff' ? getWeekKey() : undefined,
     }
@@ -255,6 +260,7 @@ export function AddTaskModal({ onClose, editTask }: Props) {
                 <div className="flex flex-col gap-2">
                   {(
                     [
+                      { value: 'backlog', label: 'Backlog (no day assigned)' },
                       { value: 'daily', label: 'Daily' },
                       { value: 'recurring', label: 'Recurring (specific day)' },
                       { value: 'oneoff', label: 'One-off (specific day)' },
@@ -281,10 +287,10 @@ export function AddTaskModal({ onClose, editTask }: Props) {
           </div>
 
           {/* Day selector */}
-          {type !== 'daily' && (
+          {type !== 'daily' && type !== 'backlog' && (
             <div>
               <p className="block text-[11px] text-muted uppercase tracking-[0.06em] mb-2">
-                Dag
+                Day
               </p>
               <Controller
                 name="dayIndex"

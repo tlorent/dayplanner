@@ -58,6 +58,7 @@ export function selectDayTasks(
     ? DAY_TASKS.filter((t) => !disabledIds.has(t.id))
     : []
   const custom = customTasks.filter((t) => {
+    if (t.backlog) return false
     if (t.dayIndex === undefined) return false
     if (t.oneOff && t.createdWeekKey !== weekKey) return false
     return true
@@ -72,6 +73,15 @@ export function selectDayTasks(
   )
 }
 
+export function selectBacklogTasks(
+  customTasks: Task[],
+  activeTag: Tag | null,
+): Task[] {
+  const tasks = customTasks.filter((t) => t.backlog === true)
+  if (activeTag) return tasks.filter((t) => t.tags.includes(activeTag))
+  return tasks
+}
+
 export function selectDailyTasks(
   customTasks: Task[],
   activeTag: Tag | null,
@@ -81,7 +91,7 @@ export function selectDailyTasks(
   const builtins = _showBuiltins
     ? DAILY_TASKS.filter((t) => !disabledIds.has(t.id))
     : []
-  const custom = customTasks.filter((t) => t.dayIndex === undefined)
+  const custom = customTasks.filter((t) => !t.backlog && t.dayIndex === undefined)
   const all = [...builtins, ...custom]
   if (activeTag) return all.filter((t) => t.tags.includes(activeTag))
   return all
@@ -136,8 +146,14 @@ export function selectGroupProgress(
   return { done, total: taskIds.length }
 }
 
+export interface DeletedCustomTask {
+  task: Task
+  deletedAt: number // timestamp ms
+}
+
 interface WeekStore {
   activeDay: DayIndex
+  activeView: 'week' | 'all'
   activeTag: Tag | null
   checked: CheckedState
   customTasks: Task[]
@@ -145,15 +161,19 @@ interface WeekStore {
   collapsedGroups: Record<string, boolean>
   dayTaskOrder: Record<number, string[]>
   disabledBuiltins: DisabledBuiltin[]
+  deletedCustomTasks: DeletedCustomTask[]
   dailySectionOpen: boolean
 
   setActiveDay: (day: DayIndex) => void
+  setActiveView: (view: 'week' | 'all') => void
   setActiveTag: (tag: Tag | null) => void
   toggleTask: (taskId: string) => void
   resetDay: () => void
   addTask: (task: Task) => void
   updateTask: (id: string, patch: Partial<Task>) => void
   removeTask: (id: string) => void
+  restoreCustomTask: (id: string) => void
+  restoreAllCustomTasks: () => void
   disableBuiltin: (id: string) => void
   enableBuiltin: (id: string) => void
   enableAllBuiltins: () => void
@@ -169,6 +189,7 @@ export const useWeekStore = create<WeekStore>()(
   persist(
     (set, get) => ({
       activeDay: (getTodayIndex() ?? 0) as DayIndex,
+      activeView: 'week' as const,
       activeTag: null,
       checked: {},
       customTasks: [],
@@ -176,9 +197,11 @@ export const useWeekStore = create<WeekStore>()(
       collapsedGroups: {},
       dayTaskOrder: {},
       disabledBuiltins: [],
+      deletedCustomTasks: [],
       dailySectionOpen: false,
 
       setActiveDay: (day) => set({ activeDay: day }),
+      setActiveView: (view) => set({ activeView: view }),
       setActiveTag: (tag) => set({ activeTag: tag }),
 
       toggleTask: (taskId) => {
@@ -225,6 +248,7 @@ export const useWeekStore = create<WeekStore>()(
 
       removeTask: (id) =>
         set((s) => {
+          const task = s.customTasks.find((t) => t.id === id)
           const customTasks = s.customTasks.filter((t) => t.id !== id)
           const dayTaskOrder: Record<number, string[]> = {}
           for (const [day, ids] of Object.entries(s.dayTaskOrder)) {
@@ -237,8 +261,30 @@ export const useWeekStore = create<WeekStore>()(
             const { [id]: _removed, ...rest } = weekChecked
             checked[weekKey] = rest
           }
-          return { customTasks, dayTaskOrder, checked }
+          const deletedCustomTasks = task
+            ? [...s.deletedCustomTasks, { task, deletedAt: Date.now() }]
+            : s.deletedCustomTasks
+          return { customTasks, dayTaskOrder, checked, deletedCustomTasks }
         }),
+
+      restoreCustomTask: (id) =>
+        set((s) => {
+          const entry = s.deletedCustomTasks.find((d) => d.task.id === id)
+          if (!entry) return {}
+          return {
+            customTasks: [...s.customTasks, entry.task],
+            deletedCustomTasks: s.deletedCustomTasks.filter((d) => d.task.id !== id),
+          }
+        }),
+
+      restoreAllCustomTasks: () =>
+        set((s) => ({
+          customTasks: [
+            ...s.customTasks,
+            ...s.deletedCustomTasks.map((d) => d.task),
+          ],
+          deletedCustomTasks: [],
+        })),
 
       disableBuiltin: (id) =>
         set((s) => ({
@@ -258,6 +304,9 @@ export const useWeekStore = create<WeekStore>()(
         set((s) => ({
           disabledBuiltins: s.disabledBuiltins.filter(
             (d) => Date.now() - d.disabledAt < TWENTY_FOUR_HOURS,
+          ),
+          deletedCustomTasks: s.deletedCustomTasks.filter(
+            (d) => Date.now() - d.deletedAt < TWENTY_FOUR_HOURS,
           ),
         })),
 
@@ -298,6 +347,7 @@ export const useWeekStore = create<WeekStore>()(
         dayTaskOrder: s.dayTaskOrder,
         activeDay: s.activeDay,
         disabledBuiltins: s.disabledBuiltins,
+        deletedCustomTasks: s.deletedCustomTasks,
         dailySectionOpen: s.dailySectionOpen,
       }),
     },

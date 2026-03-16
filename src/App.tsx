@@ -1,6 +1,7 @@
 import { UserButton, useUser } from '@stackframe/react'
 import { useEffect, useState } from 'react'
 import { AddTaskModal } from './components/AddTaskModal'
+import { AllSection } from './components/AllSection'
 import { DailySection } from './components/DailySection'
 import { DaySection } from './components/DaySection'
 import { Logo } from './components/Logo'
@@ -45,13 +46,16 @@ export default function App() {
   }, [user?.id, isTim])
 
   const activeDay = useWeekStore((s) => s.activeDay)
+  const activeView = useWeekStore((s) => s.activeView)
   const activeTag = useWeekStore((s) => s.activeTag)
   const setActiveDay = useWeekStore((s) => s.setActiveDay)
+  const setActiveView = useWeekStore((s) => s.setActiveView)
   const setActiveTag = useWeekStore((s) => s.setActiveTag)
   const resetDay = useWeekStore((s) => s.resetDay)
   const checked = useWeekStore((s) => s.checked)
   const customTasks = useWeekStore((s) => s.customTasks)
   const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
+  const deletedCustomTasks = useWeekStore((s) => s.deletedCustomTasks)
   const purgeExpiredDisabled = useWeekStore((s) => s.purgeExpiredDisabled)
   const dailySectionOpen = useWeekStore((s) => s.dailySectionOpen)
   const setDailySectionOpen = useWeekStore((s) => s.setDailySectionOpen)
@@ -128,6 +132,27 @@ export default function App() {
           className="fade-up delay-0 w-52 shrink-0 sticky top-13 self-start h-[calc(100vh-52px)] bg-elevated flex-col px-4 py-6 overflow-y-auto hidden md:flex"
           style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
+          {/* All nav */}
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={() => setActiveView('all')}
+              className={[
+                'flex items-center gap-2 px-2.5 py-1.75 rounded-md border-none font-ui text-[13px] cursor-pointer text-left transition-all duration-150 w-full',
+                activeView === 'all'
+                  ? 'bg-white/8 text-white/90 font-medium'
+                  : 'bg-transparent text-white/50 font-normal hover:bg-hover',
+              ].join(' ')}
+              style={
+                activeView === 'all'
+                  ? { borderLeft: '2px solid #C8922A', paddingLeft: '8px' }
+                  : { borderLeft: '2px solid transparent', paddingLeft: '8px' }
+              }
+            >
+              All tasks
+            </button>
+          </div>
+
           {/* Day nav */}
           <div>
             <p className="text-[10px] font-semibold tracking-widest uppercase text-muted mb-2.5">
@@ -135,7 +160,7 @@ export default function App() {
             </p>
             <nav className="flex flex-col gap-0.5">
               {DAYS.map((day, i) => {
-                const isActive = activeDay === i
+                const isActive = activeDay === i && activeView === 'week'
                 const isToday = todayIndex === i
                 const dp = selectDayProgress(
                   checked,
@@ -148,7 +173,10 @@ export default function App() {
                     // biome-ignore lint/suspicious/noArrayIndexKey: DAYS is a fixed ordered array
                     key={i}
                     type="button"
-                    onClick={() => setActiveDay(i as DayIndex)}
+                    onClick={() => {
+                      setActiveDay(i as DayIndex)
+                      setActiveView('week')
+                    }}
                     className={[
                       'flex items-center gap-2 px-2.5 py-1.75 rounded-md border-none font-ui text-[13px] cursor-pointer text-left transition-all duration-150 w-full',
                       isActive
@@ -237,16 +265,18 @@ export default function App() {
             </div>
           </div>
 
-          {/* Restore hidden built-ins — only shown when some are hidden */}
-          {disabledBuiltins.length > 0 && (
+          {/* Restore deleted tasks — shown when any builtins or custom tasks are deleted */}
+          {(disabledBuiltins.length + deletedCustomTasks.length) > 0 && (
             <button
               type="button"
               onClick={() => setShowRestoreModal(true)}
               className="w-full text-left px-2.5 py-1.5 rounded-md border-none bg-transparent font-ui text-[11px] cursor-pointer transition-all duration-150 hover:bg-hover mb-2"
               style={{ color: 'rgba(255,255,255,0.35)' }}
             >
-              ↩ {disabledBuiltins.length} deleted{' '}
-              {disabledBuiltins.length !== 1 ? 'tasks' : 'task'}
+              {(() => {
+                const count = disabledBuiltins.length + deletedCustomTasks.length
+                return `↩ ${count} deleted ${count !== 1 ? 'tasks' : 'task'}`
+              })()}
             </button>
           )}
 
@@ -267,88 +297,88 @@ export default function App() {
 
         {/* Main content */}
         <main className="main-content flex-1 min-w-0 px-4 md:px-10 py-8">
-          {/* Day title */}
-          <div className="fade-up delay-1 mb-6">
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <h1
-                className="font-display font-extrabold text-[36px] md:text-[72px] leading-none text-white/92 m-0"
-                style={{ letterSpacing: '-1.5px' }}
-              >
-                {DAYS[activeDay].label}
-              </h1>
-              <span className="font-ui text-[15px] md:text-[18px] font-medium text-white/70 tabular-nums">
-                {weekDates[activeDay]}
-              </span>
-              {todayIndex === activeDay && (
-                <span
-                  className="font-ui text-[11px] font-semibold tracking-[0.12em] uppercase"
-                  style={{ color: '#C8922A' }}
+          {activeView === 'all' ? (
+            <>
+              {/* All title */}
+              <div className="fade-up delay-1 mb-6">
+                <h1
+                  className="font-display font-extrabold text-[36px] md:text-[72px] leading-none text-white/92 m-0"
+                  style={{ letterSpacing: '-1.5px' }}
                 >
-                  — Today
-                </span>
-              )}
-            </div>
-          </div>
+                  All tasks
+                </h1>
+              </div>
 
-          {/* Mobile: day selector */}
-          <div className="flex md:hidden gap-1 mb-3 overflow-x-auto py-1">
-            {DAYS.map((day, i) => {
-              const isActive = activeDay === i
-              const isToday = todayIndex === i
-              return (
-                <button
-                  // biome-ignore lint/suspicious/noArrayIndexKey: DAYS is a fixed ordered array
-                  key={i}
-                  type="button"
-                  onClick={() => setActiveDay(i as DayIndex)}
-                  className={[
-                    'shrink-0 px-3 py-1.5 rounded-md border-none font-ui text-[12px] cursor-pointer transition-all duration-150',
-                    isActive
-                      ? 'bg-white/10 text-white/90 font-medium'
-                      : 'bg-transparent text-white/40 hover:bg-hover',
-                  ].join(' ')}
-                  style={
-                    isActive
-                      ? {
-                          outline: `1.5px solid ${isToday ? '#C8922A' : 'rgba(255,255,255,0.2)'}`,
-                        }
-                      : {}
-                  }
-                >
-                  {day.short}
-                </button>
-              )
-            })}
-          </div>
+              {/* All section */}
+              <section className="fade-up delay-2 mb-8">
+                <div className="mb-3">
+                  <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted">
+                    Backlog
+                  </h2>
+                </div>
+                <AllSection />
+              </section>
+            </>
+          ) : (
+            <>
+              {/* Day title */}
+              <div className="fade-up delay-1 mb-6">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <h1
+                    className="font-display font-extrabold text-[36px] md:text-[72px] leading-none text-white/92 m-0"
+                    style={{ letterSpacing: '-1.5px' }}
+                  >
+                    {DAYS[activeDay].label}
+                  </h1>
+                  <span className="font-ui text-[15px] md:text-[18px] font-medium text-white/70 tabular-nums">
+                    {weekDates[activeDay]}
+                  </span>
+                  {todayIndex === activeDay && (
+                    <span
+                      className="font-ui text-[11px] font-semibold tracking-[0.12em] uppercase"
+                      style={{ color: '#C8922A' }}
+                    >
+                      — Today
+                    </span>
+                  )}
+                </div>
+              </div>
 
-          {/* Mobile: tag filter */}
-          {[
-            ...(isTim
-              ? [...TAGS].sort().map((name) => ({
-                  name,
-                  color: TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)',
-                }))
-              : []),
-            ...customTags.map((t) => ({ name: t.name, color: t.color })),
-          ].length > 0 && (
-            <div className="flex md:hidden gap-1.5 mb-6 overflow-x-auto py-1">
-              <button
-                type="button"
-                onClick={() => setActiveTag(null)}
-                className={[
-                  'shrink-0 px-2.5 py-1 rounded-md border-none font-ui text-[11px] cursor-pointer transition-all duration-150',
-                  activeTag === null
-                    ? 'bg-white/10 text-white/90'
-                    : 'bg-transparent text-white/40 hover:bg-hover',
-                ].join(' ')}
-                style={
-                  activeTag === null
-                    ? { outline: '1.5px solid rgba(255,255,255,0.2)' }
-                    : {}
-                }
-              >
-                All
-              </button>
+              {/* Mobile: day selector */}
+              <div className="flex md:hidden gap-1 mb-3 overflow-x-auto py-1">
+                {DAYS.map((day, i) => {
+                  const isActive = activeDay === i
+                  const isToday = todayIndex === i
+                  return (
+                    <button
+                      // biome-ignore lint/suspicious/noArrayIndexKey: DAYS is a fixed ordered array
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setActiveDay(i as DayIndex)
+                        setActiveView('week')
+                      }}
+                      className={[
+                        'shrink-0 px-3 py-1.5 rounded-md border-none font-ui text-[12px] cursor-pointer transition-all duration-150',
+                        isActive
+                          ? 'bg-white/10 text-white/90 font-medium'
+                          : 'bg-transparent text-white/40 hover:bg-hover',
+                      ].join(' ')}
+                      style={
+                        isActive
+                          ? {
+                              outline: `1.5px solid ${isToday ? '#C8922A' : 'rgba(255,255,255,0.2)'}`,
+                            }
+                          : {}
+                      }
+                    >
+                      {day.short}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Mobile: tag filter */}
               {[
                 ...(isTim
                   ? [...TAGS].sort().map((name) => ({
@@ -357,70 +387,103 @@ export default function App() {
                     }))
                   : []),
                 ...customTags.map((t) => ({ name: t.name, color: t.color })),
-              ].map(({ name, color }) => {
-                const isActive = activeTag === name
-                return (
+              ].length > 0 && (
+                <div className="flex md:hidden gap-1.5 mb-6 overflow-x-auto py-1">
                   <button
-                    key={name}
                     type="button"
-                    onClick={() =>
-                      setActiveTag(isActive ? null : (name as Tag))
+                    onClick={() => setActiveTag(null)}
+                    className={[
+                      'shrink-0 px-2.5 py-1 rounded-md border-none font-ui text-[11px] cursor-pointer transition-all duration-150',
+                      activeTag === null
+                        ? 'bg-white/10 text-white/90'
+                        : 'bg-transparent text-white/40 hover:bg-hover',
+                    ].join(' ')}
+                    style={
+                      activeTag === null
+                        ? { outline: '1.5px solid rgba(255,255,255,0.2)' }
+                        : {}
                     }
-                    className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-md border-none font-ui text-[11px] cursor-pointer transition-all duration-150"
-                    style={{
-                      color: isActive ? color : 'rgba(255,255,255,0.4)',
-                      background: isActive
-                        ? 'rgba(255,255,255,0.06)'
-                        : 'transparent',
-                      outline: isActive ? `1.5px solid ${color}40` : 'none',
-                    }}
                   >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ background: color }}
-                    />
-                    {name}
+                    All
                   </button>
-                )
-              })}
-            </div>
+                  {[
+                    ...(isTim
+                      ? [...TAGS].sort().map((name) => ({
+                          name,
+                          color:
+                            TAG_COLORS[name]?.[0] ?? 'rgba(255,255,255,0.4)',
+                        }))
+                      : []),
+                    ...customTags.map((t) => ({
+                      name: t.name,
+                      color: t.color,
+                    })),
+                  ].map(({ name, color }) => {
+                    const isActive = activeTag === name
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() =>
+                          setActiveTag(isActive ? null : (name as Tag))
+                        }
+                        className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-md border-none font-ui text-[11px] cursor-pointer transition-all duration-150"
+                        style={{
+                          color: isActive ? color : 'rgba(255,255,255,0.4)',
+                          background: isActive
+                            ? 'rgba(255,255,255,0.06)'
+                            : 'transparent',
+                          outline: isActive ? `1.5px solid ${color}40` : 'none',
+                        }}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ background: color }}
+                        />
+                        {name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Dag-specifiek section */}
+              <section className="fade-up delay-2 mb-8">
+                <div className="mb-3">
+                  <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted">
+                    Day-specific
+                  </h2>
+                </div>
+                <DaySection />
+              </section>
+
+              {/* Dagelijks section */}
+              <section className="fade-up delay-3 mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setDailySectionOpen(!dailySectionOpen)}
+                    className="flex items-center gap-2 border-none bg-transparent cursor-pointer p-0"
+                  >
+                    <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted flex items-center gap-2">
+                      Daily
+                      <span className="text-[10px] text-white/50">
+                        {dailySectionOpen ? '▾' : '▸'}
+                      </span>
+                    </h2>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetDay}
+                    className={`px-2.5 py-1 rounded-[5px] border border-border bg-transparent text-muted font-ui text-[11px] cursor-pointer transition-all duration-150 hover:bg-hover hover:text-text ${dailySectionOpen ? '' : 'invisible'}`}
+                  >
+                    Reset day
+                  </button>
+                </div>
+                {dailySectionOpen && <DailySection />}
+              </section>
+            </>
           )}
-
-          {/* Dag-specifiek section */}
-          <section className="fade-up delay-2 mb-8">
-            <div className="mb-3">
-              <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted">
-                Day-specific
-              </h2>
-            </div>
-            <DaySection />
-          </section>
-
-          {/* Dagelijks section */}
-          <section className="fade-up delay-3 mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <button
-                type="button"
-                onClick={() => setDailySectionOpen(!dailySectionOpen)}
-                className="flex items-center gap-2 border-none bg-transparent cursor-pointer p-0"
-              >
-                <h2 className="m-0 text-[11px] font-semibold tracking-widest uppercase text-muted flex items-center gap-2">
-                  Daily
-                  <span className="text-[10px] text-white/50">
-                    {dailySectionOpen ? '▾' : '▸'}
-                  </span>
-                </h2>
-              </button>
-              <button
-                type="button"
-                onClick={handleResetDay}
-                className={`px-2.5 py-1 rounded-[5px] border border-border bg-transparent text-muted font-ui text-[11px] cursor-pointer transition-all duration-150 hover:bg-hover hover:text-text ${dailySectionOpen ? '' : 'invisible'}`}
-              >
-                Reset day
-              </button>
-            </div>
-            {dailySectionOpen && <DailySection />}
-          </section>
 
           {/* Mobile: add task button */}
           <div className="md:hidden mt-4">

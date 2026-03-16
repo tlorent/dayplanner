@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { TAG_COLORS } from '../data/tasks'
 import { selectIsChecked, useWeekStore } from '../store/useWeekStore'
 import type { Task } from '../types'
@@ -62,104 +63,112 @@ export function TaskRow({ task, sortable }: Props) {
 
   return (
     <>
-      <button
+      {/* Wrapper needed to position the action button outside the clickable row */}
+      <div
         ref={setNodeRef}
-        type="button"
+        className="group relative border-b border-white/4"
         style={{
           transform: CSS.Transform.toString(transform),
           transition,
           opacity: isDragging ? 0.4 : 1,
         }}
-        className={[
-          'task-row group flex items-center gap-2.5 px-3.5 py-2.5 border-b border-white/4 w-full text-left cursor-pointer transition-colors duration-150 hover:bg-hover',
-          animateIn ? 'task-animate-in' : '',
-          flashing ? 'green-flash' : '',
-        ].join(' ')}
-        onClick={() => toggleTask(task.id)}
-        onAnimationEnd={(e) => {
-          if (e.animationName === 'greenFlash') setFlashing(false)
-        }}
       >
-        {/* Drag handle */}
-        {sortable && (
-          // biome-ignore lint/a11y/noStaticElementInteractions: dnd-kit spreads role/keyboard handlers via {...attributes} {...listeners}
-          <span
-            {...attributes}
-            {...listeners}
-            className="text-white/30 text-[11px] cursor-grab active:cursor-grabbing shrink-0 select-none"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-          >
-            ⠿
-          </span>
-        )}
-
-        {/* Checkbox */}
-        <div
+        <button
+          type="button"
           className={[
-            'flex items-center justify-center shrink-0 w-4 h-4 rounded-sm transition-all duration-150',
-            popping ? 'check-pop' : '',
+            'task-row flex items-center gap-2.5 px-3.5 py-2.5 w-full text-left cursor-pointer transition-colors duration-150 hover:bg-hover',
+            animateIn ? 'task-animate-in' : '',
+            flashing ? 'green-flash' : '',
           ].join(' ')}
-          style={
-            isChecked
-              ? { background: '#C8922A', border: '1px solid #C8922A' }
-              : {
-                  background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.20)',
-                }
-          }
+          onClick={() => toggleTask(task.id)}
+          onAnimationEnd={(e) => {
+            if (e.animationName === 'greenFlash') setFlashing(false)
+          }}
         >
-          {isChecked && (
-            <svg
-              aria-hidden="true"
-              width="9"
-              height="7"
-              viewBox="0 0 9 7"
-              fill="none"
+          {/* Drag handle */}
+          {sortable && (
+            // biome-ignore lint/a11y/noStaticElementInteractions: dnd-kit spreads role/keyboard handlers via {...attributes} {...listeners}
+            <span
+              {...attributes}
+              {...listeners}
+              className="text-white/30 text-[11px] cursor-grab active:cursor-grabbing shrink-0 select-none"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
             >
-              <path
-                d="M1 3.5L3.5 6L8 1"
-                stroke="#0C0C0C"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+              ⠿
+            </span>
           )}
-        </div>
 
-        {/* Label */}
-        <span
-          className={`flex-1 text-[13.5px] transition-colors duration-200 ${isChecked ? 'text-white/40 line-through' : 'text-white/82'}`}
-        >
-          {task.label}
-        </span>
-
-        {/* Tags */}
-        <div className="flex gap-1">
-          {task.tags.map((tag) => {
-            const customColor = customTags.find((t) => t.name === tag)?.color
-            const color = customColor ?? TAG_COLORS[tag]?.[0]
-            return <TagChip key={tag} tag={tag} color={color} size="xs" />
-          })}
-        </div>
-
-        {/* Edit / Hide button — zero width when hidden (no horizontal space), full width on hover */}
-        <div className="overflow-hidden w-0 group-hover:w-10 group-hover:ml-1 transition-[width,margin] duration-150 shrink-0">
-          <button
-            type="button"
-            onClick={handleActionClick}
-            className="whitespace-nowrap text-white/60 text-[11px] px-1.5 py-0.5 rounded border border-white/20 bg-transparent cursor-pointer pointer-events-none group-hover:pointer-events-auto"
-            title={isCustom ? 'Taak bewerken' : 'Taak verbergen'}
-            tabIndex={-1}
+          {/* Checkbox */}
+          <div
+            className={[
+              'flex items-center justify-center shrink-0 w-4 h-4 rounded-sm transition-all duration-150',
+              popping ? 'check-pop' : '',
+            ].join(' ')}
+            style={
+              isChecked
+                ? { background: '#C8922A', border: '1px solid #C8922A' }
+                : {
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.20)',
+                  }
+            }
           >
-            {isCustom ? '✏' : '✕'}
-          </button>
-        </div>
-      </button>
+            {isChecked && (
+              <svg
+                aria-hidden="true"
+                width="9"
+                height="7"
+                viewBox="0 0 9 7"
+                fill="none"
+              >
+                <path
+                  d="M1 3.5L3.5 6L8 1"
+                  stroke="#0C0C0C"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </div>
 
-      {editOpen && isCustom && (
-        <AddTaskModal editTask={task} onClose={() => setEditOpen(false)} />
+          {/* Label */}
+          <span
+            className={`flex-1 text-[13.5px] transition-colors duration-200 ${isChecked ? 'text-white/40 line-through' : 'text-white/82'}`}
+          >
+            {task.label}
+          </span>
+
+          {/* Tags (hidden on hover) + action button (shown on hover) — same slot, no layout shift */}
+          <div className="relative flex items-center shrink-0">
+            <div className="flex gap-1 group-hover:opacity-0 transition-opacity duration-150">
+              {task.tags.map((tag) => {
+                const customColor = customTags.find(
+                  (t) => t.name === tag,
+                )?.color
+                const color = customColor ?? TAG_COLORS[tag]?.[0]
+                return <TagChip key={tag} tag={tag} color={color} size="xs" />
+              })}
+            </div>
+          </div>
+        </button>
+
+        {/* Action button — absolutely positioned, outside the row button, no bubbling */}
+        <button
+          type="button"
+          onClick={handleActionClick}
+          className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-white/60 text-[11px] px-1.5 py-0.5 rounded border border-white/20 bg-card hover:bg-hover cursor-pointer"
+          title={isCustom ? 'Edit task' : 'Remove task'}
+          tabIndex={-1}
+        >
+          {isCustom ? '✏' : '✕'}
+        </button>
+      </div>
+
+      {editOpen && isCustom && createPortal(
+        <AddTaskModal editTask={task} onClose={() => setEditOpen(false)} />,
+        document.body,
       )}
     </>
   )

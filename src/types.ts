@@ -8,6 +8,7 @@ export interface Task {
   tags: Tag[]
   dayIndex?: DayIndex // undefined = daily recurring
   oneOff?: boolean
+  backlog?: boolean // not assigned to any day — lives in the All list
   source?: 'custom' | 'builtin'
   createdWeekKey?: string // for one-off tasks: the week they were created in
 }

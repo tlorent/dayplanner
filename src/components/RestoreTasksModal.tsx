@@ -5,13 +5,19 @@ import { TagChip } from './TagChip'
 
 const ALL_BUILTINS = [...DAILY_TASKS, ...DAY_TASKS]
 
-function timeLeft(disabledAt: number): string {
-  const remaining = 24 * 60 * 60 * 1000 - (Date.now() - disabledAt)
+function timeLeft(timestamp: number): string {
+  const remaining = 24 * 60 * 60 * 1000 - (Date.now() - timestamp)
   if (remaining <= 0) return 'disappears soon'
   const h = Math.floor(remaining / 3_600_000)
   const m = Math.floor((remaining % 3_600_000) / 60_000)
-  if (h > 0) return `disappears in ${h}u ${m}m`
-  return `disappears ${m}m`
+  if (h > 0) return `disappears in ${h}h ${m}m`
+  return `disappears in ${m}m`
+}
+
+function taskDayLabel(task: Task): string {
+  if (task.backlog) return 'Backlog'
+  if (task.dayIndex !== undefined) return DAYS[task.dayIndex].label
+  return 'Daily'
 }
 
 interface Props {
@@ -20,12 +26,32 @@ interface Props {
 
 export function RestoreTasksModal({ onClose }: Props) {
   const disabledBuiltins = useWeekStore((s) => s.disabledBuiltins)
+  const deletedCustomTasks = useWeekStore((s) => s.deletedCustomTasks)
   const enableBuiltin = useWeekStore((s) => s.enableBuiltin)
   const enableAllBuiltins = useWeekStore((s) => s.enableAllBuiltins)
+  const restoreCustomTask = useWeekStore((s) => s.restoreCustomTask)
+  const restoreAllCustomTasks = useWeekStore((s) => s.restoreAllCustomTasks)
+  const customTags = useWeekStore((s) => s.customTags)
 
-  const entries = disabledBuiltins
-    .map((d) => ({ ...d, task: ALL_BUILTINS.find((t) => t.id === d.id) }))
+  const builtinEntries = disabledBuiltins
+    .map((d) => ({ id: d.id, timestamp: d.disabledAt, task: ALL_BUILTINS.find((t) => t.id === d.id) }))
     .filter((e): e is typeof e & { task: Task } => e.task != null)
+
+  const customEntries = deletedCustomTasks.map((d) => ({
+    id: d.task.id,
+    timestamp: d.deletedAt,
+    task: d.task,
+  }))
+
+  const allEntries = [...builtinEntries, ...customEntries].sort(
+    (a, b) => b.timestamp - a.timestamp,
+  )
+
+  const handleRecoverAll = () => {
+    enableAllBuiltins()
+    restoreAllCustomTasks()
+    onClose()
+  }
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: backdrop click-to-close pattern
@@ -34,7 +60,7 @@ export function RestoreTasksModal({ onClose }: Props) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
     >
-      <div className="bg-elevated border border-border rounded-xl p-6 w-[480px] max-w-[92vw] flex flex-col gap-5">
+      <div className="bg-elevated border border-border rounded-xl p-6 w-120 max-w-[92vw] flex flex-col gap-5">
         <div className="flex items-center justify-between">
           <h3 className="m-0 text-[15px] font-semibold text-text">
             Deleted tasks
@@ -52,15 +78,12 @@ export function RestoreTasksModal({ onClose }: Props) {
           Deleted tasks will be removed automatically after 24 hours.
         </p>
 
-        {entries.length === 0 ? (
+        {allEntries.length === 0 ? (
           <p className="text-[13px] text-white/40 font-ui">No deleted tasks.</p>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {entries.map(({ id, disabledAt, task }) => {
-              const dayLabel =
-                task.dayIndex !== undefined
-                  ? DAYS[task.dayIndex].label
-                  : 'Daily'
+            {allEntries.map(({ id, timestamp, task }) => {
+              const isCustom = task.source === 'custom'
               return (
                 <div
                   key={id}
@@ -71,14 +94,13 @@ export function RestoreTasksModal({ onClose }: Props) {
                       {task.label}
                     </p>
                     <p className="m-0 text-[11px] text-white/30 font-ui mt-0.5">
-                      {dayLabel} · {timeLeft(disabledAt)}
+                      {taskDayLabel(task)} · {timeLeft(timestamp)}
                     </p>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     {task.tags.map((tag) => {
-                      const [color] = TAG_COLORS[tag] ?? [
-                        'rgba(255,255,255,0.4)',
-                      ]
+                      const customColor = customTags.find((t) => t.name === tag)?.color
+                      const color = customColor ?? TAG_COLORS[tag]?.[0]
                       return (
                         <TagChip key={tag} tag={tag} color={color} size="xs" />
                       )
@@ -86,7 +108,7 @@ export function RestoreTasksModal({ onClose }: Props) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => enableBuiltin(id)}
+                    onClick={() => isCustom ? restoreCustomTask(id) : enableBuiltin(id)}
                     className="shrink-0 px-2.5 py-1 rounded-md border border-white/15 bg-transparent text-white/50 hover:text-white/80 hover:border-white/30 font-ui text-[11px] cursor-pointer transition-colors"
                   >
                     Recover
@@ -97,13 +119,10 @@ export function RestoreTasksModal({ onClose }: Props) {
           </div>
         )}
 
-        {entries.length > 1 && (
+        {allEntries.length > 1 && (
           <button
             type="button"
-            onClick={() => {
-              enableAllBuiltins()
-              onClose()
-            }}
+            onClick={handleRecoverAll}
             className="self-end px-4 py-1.5 rounded-md border border-white/15 bg-transparent text-white/50 hover:text-white/80 font-ui text-[12px] cursor-pointer transition-colors"
           >
             Recover all
