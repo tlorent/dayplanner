@@ -2,22 +2,17 @@ import type { Task } from '../types'
 
 export const TAGS = [
   'bc',
-  'dunzo',
   'hyf',
   'leeskring',
-  'sudo',
   'leren',
   'linkedin',
   'instagram',
 ] as const
 
-// Per-tag accent colors: [text, background, border]
 export const TAG_COLORS: Record<string, [string, string, string]> = {
   bc: ['#6B9FD4', '#0F1A2E', '#1E3A5F'],
-  dunzo: ['#AAAAAA', '#1A1A1A', '#3A3A3A'],
   hyf: ['#C8922A', '#1E1608', '#4A3510'],
   leeskring: ['#A07BC8', '#160F1E', '#3A1F5A'],
-  sudo: ['#6BAF6B', '#0A1A0A', '#1A3D1A'],
   leren: ['#5AAFAF', '#0A1818', '#1A3F3F'],
   linkedin: ['#5A8FC8', '#0A1220', '#1A3050'],
   instagram: ['#C87A9A', '#1E0A14', '#4A1A2A'],
@@ -31,72 +26,40 @@ export const DAYS: { label: string; short: string }[] = [
   { label: 'Friday', short: 'fr' },
 ]
 
-// Daily recurring tasks (appear every day)
+// ─── Daily recurring tasks (every workday) ────────────────────────────────
+
 export const DAILY_TASKS: Task[] = [
-  { id: 'd1', label: 'HYF les-segment schrijven', tags: ['hyf'] },
+  {
+    id: 'd1',
+    label: 'HYF les-segment schrijven',
+    tags: ['hyf'],
+  },
   {
     id: 'd2',
-    label: 'Frontend Masters video: Practical Prompt Engineering',
+    label: 'Frontend Masters video kijken',
     tags: ['leren'],
   },
   {
     id: 'd3',
-    label: '5 LinkedIn posts liken/reageren',
-    tags: ['linkedin', 'bc'],
+    label: '30–60 min full-stack app bouwen',
+    tags: ['leren'],
   },
   {
     id: 'd4',
-    label: 'Reageer op reacties op eigen content',
-    tags: ['linkedin', 'bc'],
-  },
-  { id: 'd5', label: 'Pipeline actie uitvoeren', tags: ['bc'] },
-  { id: 'd16', label: "5 nieuwe ICP's toevoegen aan pipeline", tags: ['bc'] },
-  {
-    id: 'd6',
-    label: '5 comments op boekaccounts',
-    tags: ['leeskring', 'instagram'],
+    label: 'Reageer op reacties op eigen BC-content',
+    tags: ['bc', 'linkedin'],
   },
   {
-    id: 'd7',
-    label: '1 post publiceren of voorbereiden',
-    tags: ['leeskring', 'instagram'],
-  },
-  {
-    id: 'd8',
-    label: 'Leeskring: 3–5 uitgeverijen/podcasts/boekhandels mailen',
-    tags: ['leeskring'],
-  },
-  {
-    id: 'd9',
-    label: '5 LinkedIn posts liken/reageren',
-    tags: ['linkedin', 'sudo'],
-  },
-  {
-    id: 'd10',
-    label: 'Reageer op reacties op eigen content',
-    tags: ['linkedin', 'sudo'],
-  },
-  {
-    id: 'd12',
-    label: '5 comments op relevante posts',
-    tags: ['sudo', 'instagram'],
-  },
-  {
-    id: 'd13',
-    label: '1 post publiceren of voorbereiden',
-    tags: ['sudo', 'instagram'],
-  },
-  { id: 'd14', label: 'Dunzo: 1 uur bouwen', tags: ['dunzo'] },
-  {
-    id: 'd15',
-    label: 'Noteer wat je bouwde (input voor vrijdagpost)',
-    tags: ['dunzo'],
+    id: 'd5',
+    label: "5 nieuwe ICP's toevoegen aan pipeline",
+    tags: ['bc'],
   },
 ]
 
-// Day-specific tasks per day index (0=ma, 1=di, 2=wo, 3=do, 4=vr)
+// ─── Day-specific tasks (0=ma, 1=di, 2=wo, 3=do, 4=vr) ───────────────────
+
 export const DAY_TASKS: Task[] = [
-  // Maandag — Content dag
+  // Maandag — BC content + Leeskring
   {
     id: 'ma1',
     label: 'BC: LinkedIn post schrijven',
@@ -105,20 +68,14 @@ export const DAY_TASKS: Task[] = [
   },
   {
     id: 'ma2',
-    label: 'Sudo: LinkedIn post schrijven',
-    tags: ['sudo', 'linkedin'],
+    label: 'Leeskring: Instagram post of outreach',
+    tags: ['leeskring', 'instagram'],
     dayIndex: 0,
   },
-  {
-    id: 'ma4',
-    label: 'Schrijf dev.to artikel',
-    tags: ['bc'],
-    dayIndex: 0,
-  },
-  // Dinsdag — Bouwen
-  // (Dunzo zit nu in daily tasks)
 
-  // Woensdag — Outreach + content
+  // Dinsdag — geen extra taken
+
+  // Woensdag — BC content + Leeskring
   {
     id: 'wo1',
     label: 'BC: LinkedIn post schrijven',
@@ -127,24 +84,20 @@ export const DAY_TASKS: Task[] = [
   },
   {
     id: 'wo2',
-    label: 'Sudo: LinkedIn post schrijven',
-    tags: ['sudo', 'linkedin'],
+    label: 'Leeskring: Instagram post of outreach',
+    tags: ['leeskring', 'instagram'],
     dayIndex: 2,
   },
+
+  // Donderdag — BC outreach batch
   {
-    id: 'wo3',
-    label: 'Schrijf dev.to artikel',
-    tags: ['bc'],
-    dayIndex: 2,
-  },
-  // Donderdag — BC outreach
-  {
-    id: 'do2',
-    label: 'BC: 5 outreach mails naar leads',
+    id: 'do1',
+    label: 'BC: 5–10 outreach mails naar leads',
     tags: ['bc'],
     dayIndex: 3,
   },
-  // Vrijdag — Content + review
+
+  // Vrijdag — BC content + Leeskring
   {
     id: 'vr1',
     label: 'BC: LinkedIn post schrijven',
@@ -153,20 +106,8 @@ export const DAY_TASKS: Task[] = [
   },
   {
     id: 'vr2',
-    label: 'Sudo: LinkedIn post schrijven',
-    tags: ['sudo', 'linkedin'],
-    dayIndex: 4,
-  },
-  {
-    id: 'vr3',
-    label: 'Dunzo building-in-public post',
-    tags: ['dunzo', 'linkedin'],
-    dayIndex: 4,
-  },
-  {
-    id: 'vr4',
-    label: 'Schrijf dev.to artikel',
-    tags: ['bc'],
+    label: 'Leeskring: Instagram post of outreach',
+    tags: ['leeskring', 'instagram'],
     dayIndex: 4,
   },
 ]
